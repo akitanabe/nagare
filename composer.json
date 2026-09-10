@@ -1,0 +1,40 @@
+{
+  "name": "akitanabe/nagare",
+  "description": "A PHP application.",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": "^8.5"
+  },
+  "require-dev": {
+    "carthage-software/mago": "^1.47",
+    "phpstan/phpstan": "^2.2",
+    "phpunit/phpunit": "^12.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Nagare\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Nagare\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "analyse": "phpstan analyse",
+    "test": "phpunit",
+    "lint": "mago lint",
+    "format": "mago format",
+    "format:check": "mago format --check",
+    "check": [
+      "@test",
+      "@analyse",
+      "@lint",
+      "@format:check"
+    ]
+  },
+  "config": {
+    "sort-packages": true
+  }
+}

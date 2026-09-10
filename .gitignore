@@ -1,0 +1,6 @@
+.devcontainer/
+.local/
+/vendor/
+/.phpunit.cache/
+/.phpunit.result.cache
+/.phpstan/
