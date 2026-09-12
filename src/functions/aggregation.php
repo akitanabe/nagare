@@ -44,6 +44,66 @@ function sum(): Terminal
 }
 
 /**
+ * Create a terminal that evaluates values in input order, stopping at the
+ * first matching value. Otherwise, it consumes all input and returns false.
+ * Returns false for empty input.
+ *
+ * @template TValue
+ * @param callable(TValue): bool $predicate
+ * @param-later-invoked-callable $predicate
+ * @return Terminal<mixed, TValue, bool>
+ */
+function any(callable $predicate): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
+        predicate: $predicate,
+        result: false,
+        completeWhen: true,
+        resultWhenComplete: true,
+    ));
+}
+
+/**
+ * Create a terminal that evaluates values in input order, stopping at the
+ * first non-matching value. Otherwise, it consumes all input and returns true.
+ * Returns true for empty input.
+ *
+ * @template TValue
+ * @param callable(TValue): bool $predicate
+ * @param-later-invoked-callable $predicate
+ * @return Terminal<mixed, TValue, bool>
+ */
+function all(callable $predicate): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
+        predicate: $predicate,
+        result: true,
+        completeWhen: false,
+        resultWhenComplete: false,
+    ));
+}
+
+/**
+ * Create a terminal that evaluates values in input order, stopping at the
+ * first matching value. Otherwise, it consumes all input and returns true.
+ * Returns true for empty input.
+ *
+ * @template TValue
+ * @param callable(TValue): bool $predicate
+ * @param-later-invoked-callable $predicate
+ * @return Terminal<mixed, TValue, bool>
+ */
+function none(callable $predicate): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
+        predicate: $predicate,
+        result: true,
+        completeWhen: true,
+        resultWhenComplete: false,
+    ));
+}
+
+/**
  * Create a terminal that averages integer input values.
  * Returns null for empty input.
  *

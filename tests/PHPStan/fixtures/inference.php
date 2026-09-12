@@ -8,10 +8,13 @@ use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 use Nagare\Transform;
 
+use function Nagare\Aggregation\all;
+use function Nagare\Aggregation\any;
 use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\count;
 use function Nagare\Aggregation\fold;
 use function Nagare\Aggregation\join;
+use function Nagare\Aggregation\none;
 use function Nagare\Aggregation\pivot;
 use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\values;
@@ -100,6 +103,15 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('float|null', [] |> $average);
     assertType('string', $strings |> $joined);
     assertType('string', [] |> $joined);
+
+    $hasPositive = any(static fn(int $value): bool => $value > 0);
+    $allPositive = all(static fn(int $value): bool => $value > 0);
+    $hasNoNegative = none(static fn(int $value): bool => $value < 0);
+    $allNonEmpty = all(static fn(string $value): bool => $value !== '');
+    assertType('bool', $numbers |> $hasPositive);
+    assertType('bool', $numbers |> $allPositive);
+    assertType('bool', $strings |> $allNonEmpty);
+    assertType('bool', [] |> $hasNoNegative);
 
     $applyFirst = $first->apply();
     $formattedFirst = $format |> $applyFirst;

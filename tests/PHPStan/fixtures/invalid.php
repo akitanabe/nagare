@@ -7,9 +7,12 @@ namespace Nagare\Tests\PHPStan\Fixtures;
 use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 
+use function Nagare\Aggregation\all;
+use function Nagare\Aggregation\any;
 use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\fold;
 use function Nagare\Aggregation\join;
+use function Nagare\Aggregation\none;
 use function Nagare\Aggregation\pivot;
 use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\values;
@@ -56,6 +59,22 @@ function incompatible_inputs(array $numbers, array $strings): void
     $joined = join(',');
     // @phpstan-ignore argument.type (The join terminal accepts strings only.)
     $numbers |> $joined;
+
+    $hasPositive = any(static fn(int $value): bool => $value > 0);
+    // @phpstan-ignore argument.type (The any terminal predicate accepts integers only.)
+    $strings |> $hasPositive;
+    $allPositive = all(static fn(int $value): bool => $value > 0);
+    // @phpstan-ignore argument.type (The all terminal predicate accepts integers only.)
+    $strings |> $allPositive;
+    $hasNoNegative = none(static fn(int $value): bool => $value < 0);
+    // @phpstan-ignore argument.type (The none terminal predicate accepts integers only.)
+    $strings |> $hasNoNegative;
+    // @phpstan-ignore argument.type (The any predicate must return bool.)
+    any(static fn(int $value): string => (string) $value);
+    // @phpstan-ignore argument.type (The all predicate must return bool.)
+    all(static fn(int $value): string => (string) $value);
+    // @phpstan-ignore argument.type (The none predicate must return bool.)
+    none(static fn(int $value): string => (string) $value);
 
     $pivoted = pivot(values: values(), total: $sum);
     // @phpstan-ignore argument.type, argument.templateType (Every child terminal must accept the shared source.)
