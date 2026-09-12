@@ -13,6 +13,7 @@ use function Nagare\Materialization\values;
 use function Nagare\Pipeline\filtering;
 use function Nagare\Pipeline\flatMapping;
 use function Nagare\Pipeline\mapping;
+use function Nagare\Pipeline\taking;
 use function Nagare\Selection\first;
 use function Nagare\Transformation\map;
 use function PHPStan\Testing\assertType;
@@ -98,6 +99,11 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('iterable<object, int>', $objectKeys |> $filtered);
     assertType('iterable<string, int>', $stringKeys |> $filtered);
     assertType('iterable<int<0, max>, int>', $numbers |> $filtered);
+
+    $taken = taking(2);
+    assertType('iterable<object, int>', $objectKeys |> $taken);
+    assertType('iterable<string, int>', $stringKeys |> $taken);
+    assertType('iterable<int<0, max>, int>', $numbers |> $taken);
 
     assertType('int|null', $first->__invoke($numbers));
     assertType('list<int>', $values->__invoke(...)($numbers));

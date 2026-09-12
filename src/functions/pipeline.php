@@ -65,3 +65,30 @@ function filtering(callable $predicate): Closure
         }
     };
 }
+
+/**
+ * Lazily yield at most the requested number of input values while preserving their keys.
+ * A non-positive count yields an empty iterable without consuming the input.
+ * After yielding the requested number of values, iteration stops without requesting the next input value.
+ *
+ * @param int $count
+ * @return Closure<TKey, TValue>(iterable<TKey, TValue>): iterable<TKey, TValue>
+ */
+function taking(int $count): Closure
+{
+    return static function (iterable $input) use ($count): iterable {
+        if ($count <= 0) {
+            return;
+        }
+
+        $taken = 0;
+        foreach ($input as $key => $value) {
+            yield $key => $value;
+            $taken++;
+
+            if ($taken >= $count) {
+                return;
+            }
+        }
+    };
+}
