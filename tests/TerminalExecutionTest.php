@@ -19,8 +19,8 @@ final class TerminalExecutionTest extends TestCase
     {
         $terminal = values();
 
-        self::assertSame(['first' => 1], $terminal(['first' => 1]));
-        self::assertSame(['second' => 2], $terminal(['second' => 2]));
+        self::assertSame([1], $terminal(['first' => 1]));
+        self::assertSame([2], $terminal(['second' => 2]));
     }
 
     #[DataProvider('falsyValues')]
@@ -58,6 +58,17 @@ final class TerminalExecutionTest extends TestCase
         self::assertNull(first()([]));
         self::assertSame([], values()([]));
         self::assertSame(10, fold(10, static fn(int $carry, int $value): int => $carry + $value)([]));
+    }
+
+    public function testValuesIgnoresKeysFromAnyIterable(): void
+    {
+        $key = new \stdClass();
+        $source = static function () use ($key): iterable {
+            yield $key => 'first';
+            yield 'ignored' => 'second';
+        };
+
+        self::assertSame(['first', 'second'], values()($source()));
     }
 
     public function testFoldReceivesValuesInInputOrder(): void
@@ -105,12 +116,17 @@ final class TerminalExecutionTest extends TestCase
         self::assertSame($failure, $thrown);
     }
 
-    public function testTerminalPassesEachKeyAndValueInInputOrder(): void
+    public function testTerminalPassesKeysOfAnyTypeAndValuesInInputOrder(): void
     {
         $log = new RecordingLog();
         $terminal = new \Nagare\Terminal(static fn(): TerminalExecution => new RecordingExecution($log));
+        $key = new \stdClass();
+        $source = static function () use ($key): iterable {
+            yield $key => 1;
+            yield 'two' => 2;
+        };
 
-        self::assertSame('finished', $terminal(['one' => 1, 'two' => 2]));
-        self::assertSame([['one', 1], ['two', 2]], $log->seen);
+        self::assertSame('finished', $terminal($source()));
+        self::assertSame([[$key, 1], ['two', 2]], $log->seen);
     }
 }

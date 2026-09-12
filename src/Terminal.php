@@ -26,7 +26,7 @@ final class Terminal
     /**
      * Evaluate this terminal against one iterable input.
      *
-     * @param iterable<int|string, mixed> $input
+     * @param iterable<mixed, mixed> $input
      */
     public function __invoke(iterable $input): mixed
     {

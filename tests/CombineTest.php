@@ -31,7 +31,7 @@ final class CombineTest extends TestCase
         self::assertSame(
             [
                 'first' => 1,
-                'values' => ['first' => 1, 'second' => 2],
+                'values' => [1, 2],
                 'total' => 3,
             ],
             $combined($source()),
@@ -67,7 +67,7 @@ final class CombineTest extends TestCase
         self::assertSame(
             [
                 'shortCircuit' => 1,
-                'values' => ['first' => 1, 'second' => 2],
+                'values' => [1, 2],
             ],
             combine(shortCircuit: $shortCircuit, values: values())([
                 'first' => 1,
@@ -87,14 +87,14 @@ final class CombineTest extends TestCase
 
         self::assertSame(
             [
-                'values' => ['first' => 1],
+                'values' => [1],
                 'total' => 1,
             ],
             $combined(['first' => 1]),
         );
         self::assertSame(
             [
-                'values' => ['second' => 2],
+                'values' => [2],
                 'total' => 2,
             ],
             $combined(['second' => 2]),

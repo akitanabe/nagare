@@ -6,6 +6,6 @@ namespace Nagare\Tests;
 
 final class RecordingLog
 {
-    /** @var list<array{string|int, mixed}> */
+    /** @var list<array{mixed, mixed}> */
     public array $seen = [];
 }

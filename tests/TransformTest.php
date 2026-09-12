@@ -38,7 +38,7 @@ final class TransformTest extends TestCase
 
         $terminal = $transform |> values()->apply();
 
-        self::assertSame(['a' => 4, 'b' => 6, 'c' => 8], $terminal(['a' => 1, 'b' => 2, 'c' => 3]));
+        self::assertSame([4, 6, 8], $terminal(['a' => 1, 'b' => 2, 'c' => 3]));
     }
 
     public function testDefinitionsDoNotExecuteTransformCallbacksUntilTerminalExecution(): void
@@ -53,7 +53,7 @@ final class TransformTest extends TestCase
 
         self::assertSame(0, $calls);
 
-        self::assertSame(['value' => 2], $terminal(['value' => 1]));
+        self::assertSame([2], $terminal(['value' => 1]));
         self::assertSame(1, $calls);
     }
 
@@ -61,8 +61,8 @@ final class TransformTest extends TestCase
     {
         $terminal = map(static fn(int $value): int => $value + 1) |> values()->apply();
 
-        self::assertSame(['first' => 2], $terminal(['first' => 1]));
-        self::assertSame(['second' => 3], $terminal(['second' => 2]));
+        self::assertSame([2], $terminal(['first' => 1]));
+        self::assertSame([3], $terminal(['second' => 2]));
     }
 
     public function testOriginalTerminalAndDerivedTerminalRemainIndependentDefinitions(): void
@@ -70,9 +70,9 @@ final class TransformTest extends TestCase
         $original = values();
         $derived = map(static fn(int $value): int => $value + 1) |> $original->apply();
 
-        self::assertSame(['value' => 1], $original(['value' => 1]));
-        self::assertSame(['value' => 2], $derived(['value' => 1]));
-        self::assertSame(['value' => 1], $original(['value' => 1]));
+        self::assertSame([1], $original(['value' => 1]));
+        self::assertSame([2], $derived(['value' => 1]));
+        self::assertSame([1], $original(['value' => 1]));
     }
 
     public function testTerminalInvocationAcceptsOnlyIterableExecutionInput(): void
@@ -122,11 +122,16 @@ final class TransformTest extends TestCase
     public function testMappingIsLazyAndPreservesKeysAndOrder(): void
     {
         $calls = [];
+        $firstKey = new \stdClass();
+        $source = static function () use ($firstKey): iterable {
+            yield $firstKey => 1;
+            yield 'second' => 2;
+        };
         $mapped = mapping(static function (int $value) use (&$calls): int {
             $calls[] = $value;
 
             return $value * 2;
-        })(['first' => 1, 'second' => 2]);
+        })($source());
 
         self::assertSame([], $calls);
 
@@ -135,7 +140,7 @@ final class TransformTest extends TestCase
             $entries[] = [$key, $value];
         }
 
-        self::assertSame([['first', 2], ['second', 4]], $entries);
+        self::assertSame([[$firstKey, 2], ['second', 4]], $entries);
         self::assertSame([1, 2], $calls);
     }
 

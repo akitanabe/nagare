@@ -24,7 +24,7 @@ function map(callable $mapper): Transform
  * @template TInput
  * @template TOutput
  * @param callable(TInput): TOutput $mapper
- * @return Closure(iterable<int|string, TInput>): iterable<int|string, TOutput>
+ * @return Closure(iterable<mixed, TInput>): iterable<mixed, TOutput>
  */
 function mapping(callable $mapper): Closure
 {
@@ -41,7 +41,7 @@ function first(): Terminal
     return new Terminal(static fn(): TerminalExecution => new FirstExecution());
 }
 
-/** Create a terminal that collects input values while preserving their keys. */
+/** Create a terminal that collects input values into a list. */
 function values(): Terminal
 {
     return new Terminal(static fn(): TerminalExecution => new ValuesExecution());

@@ -14,10 +14,6 @@ final class RecordingExecution implements TerminalExecution
 
     public function accept(mixed $value, mixed $key): void
     {
-        if (!is_int($key) && !is_string($key)) {
-            throw new \TypeError('An iterable key must be an integer or string.');
-        }
-
         $this->log->seen[] = [$key, $value];
     }
 
