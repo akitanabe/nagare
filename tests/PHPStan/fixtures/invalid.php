@@ -13,6 +13,7 @@ use function Nagare\Materialization\values;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Selection\first;
 use function Nagare\Transformation\map;
+use function Nagare\Transformation\then;
 
 /**
  * @param list<int> $numbers
@@ -26,6 +27,10 @@ function incompatible_inputs(array $numbers, array $strings): void
     $format->transform('invalid');
     // @phpstan-ignore argument.type (The next transformation cannot accept the previous output.)
     $format |> $format;
+
+    $positive = then(static fn(int $value): bool => $value > 0);
+    // @phpstan-ignore argument.type (A string cannot be given to an integer predicate transformation.)
+    $positive->transform('invalid');
 
     $terminal = $length |> first()->apply();
     // @phpstan-ignore argument.type (The terminal requires string input after applying this transformation.)
