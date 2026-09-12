@@ -17,7 +17,10 @@ use function Nagare\Aggregation\pivot;
 use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\mapping;
+use function Nagare\Selection\find;
 use function Nagare\Selection\first;
+use function Nagare\Selection\maxBy;
+use function Nagare\Selection\minBy;
 use function Nagare\Transformation\map;
 use function Nagare\Transformation\then;
 
@@ -43,6 +46,18 @@ function incompatible_inputs(array $numbers, array $strings): void
     $numbers |> $terminal;
     // @phpstan-ignore argument.type (Lazy mapping must reject incompatible source elements.)
     $strings |> mapping(format_number(...));
+
+    $findInteger = find(static fn(int $value): bool => $value > 0);
+    // @phpstan-ignore argument.type, argument.templateType (The find predicate accepts integers only.)
+    $strings |> $findInteger;
+    $minimumIntegerByValue = minBy(static fn(int $value): int => $value);
+    // @phpstan-ignore argument.type, argument.templateType (The minBy selector accepts integers only.)
+    $strings |> $minimumIntegerByValue;
+    $maximumIntegerByValue = maxBy(static fn(int $value): int => $value);
+    // @phpstan-ignore argument.type, argument.templateType (The maxBy selector accepts integers only.)
+    $strings |> $maximumIntegerByValue;
+    // @phpstan-ignore argument.type (The find predicate must return bool.)
+    find(static fn(int $value): string => (string) $value);
 
     $sum = fold(0, static fn(int $sum, int $value): int => $sum + $value);
     // @phpstan-ignore argument.type (The reducer accepts integers only.)

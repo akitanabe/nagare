@@ -25,7 +25,13 @@ use function Nagare\Pipeline\flatMapping;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Pipeline\taking;
 use function Nagare\Pipeline\takingWhile;
+use function Nagare\Selection\find;
 use function Nagare\Selection\first;
+use function Nagare\Selection\last;
+use function Nagare\Selection\max;
+use function Nagare\Selection\maxBy;
+use function Nagare\Selection\min;
+use function Nagare\Selection\minBy;
 use function Nagare\Transformation\defaults;
 use function Nagare\Transformation\defaultsOr;
 use function Nagare\Transformation\map;
@@ -64,11 +70,17 @@ function summarize(array $state, int $value): array
 /**
  * @param list<int> $numbers
  * @param list<string> $strings
+ * @param list<positive-int> $positiveNumbers
  * @param iterable<object, int> $objectKeys
  * @param array<string, int> $stringKeys
  */
-function inferred_results(array $numbers, array $strings, iterable $objectKeys, array $stringKeys): void
-{
+function inferred_results(
+    array $numbers,
+    array $strings,
+    array $positiveNumbers,
+    iterable $objectKeys,
+    array $stringKeys,
+): void {
     $format = map(format_number(...));
     $length = map(text_length(...));
     $factoryTransform = Transform::factory(format_number(...));
@@ -80,6 +92,43 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('int|null', $numbers |> $first);
     assertType('string|null', $strings |> $first);
     assertType('null', [] |> $first);
+
+    $last = last();
+    $minimum = min();
+    $maximum = max();
+    assertType('int|null', $numbers |> $last);
+    assertType('string|null', $strings |> $last);
+    assertType('int|null', $numbers |> $minimum);
+    assertType('string|null', $strings |> $maximum);
+    assertType('int<1, max>|null', $positiveNumbers |> $last);
+    assertType('int<1, max>|null', $positiveNumbers |> $minimum);
+    assertType('int<1, max>|null', $positiveNumbers |> $maximum);
+    assertType('null', [] |> $last);
+    assertType('null', [] |> $minimum);
+    assertType('null', [] |> $maximum);
+
+    $found = find(static fn(int $value): bool => $value > 0);
+    assertType('int|null', $numbers |> $found);
+    assertType('int<1, max>|null', $positiveNumbers |> $found);
+    assertType('null', [] |> $found);
+
+    $minimumBy = minBy(static fn(int $value): int => $value);
+    $maximumBy = maxBy(static fn(int $value): int => $value);
+    assertType('int|null', $numbers |> $minimumBy);
+    assertType('int|null', $numbers |> $maximumBy);
+    assertType('int<1, max>|null', $positiveNumbers |> $minimumBy);
+    assertType('int<1, max>|null', $positiveNumbers |> $maximumBy);
+    assertType('null', [] |> $minimumBy);
+    assertType('null', [] |> $maximumBy);
+
+    $foundText = find(static fn(string $value): bool => $value !== '');
+    $minimumTextByLength = minBy(static fn(string $value): int => strlen($value));
+    $formattedFound = $format |> $foundText->apply();
+    $formattedMinimumByLength = $format |> $minimumTextByLength->apply();
+    $formattedMaximumByLength = $format |> maxBy(static fn(string $value): int => strlen($value))->apply();
+    assertType('string|null', $numbers |> $formattedFound);
+    assertType('string|null', $numbers |> $formattedMinimumByLength);
+    assertType('string|null', $numbers |> $formattedMaximumByLength);
 
     $values = values();
     assertType('list<int>', $numbers |> $values);
