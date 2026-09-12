@@ -7,8 +7,8 @@ namespace Nagare\Tests\PHPStan\Fixtures;
 use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 
-use function Nagare\Aggregation\combine;
 use function Nagare\Aggregation\fold;
+use function Nagare\Aggregation\pivot;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Selection\first;
@@ -44,19 +44,19 @@ function incompatible_inputs(array $numbers, array $strings): void
     // @phpstan-ignore argument.type (The transformed output must satisfy the reducer input.)
     $format |> $sum->apply();
 
-    $combined = combine(values: values(), total: $sum);
+    $pivoted = pivot(values: values(), total: $sum);
     // @phpstan-ignore argument.type, argument.templateType (Every child terminal must accept the shared source.)
-    $strings |> $combined;
+    $strings |> $pivoted;
 
-    $incompatible = combine(length: $terminal, sum: $sum);
+    $incompatible = pivot(length: $terminal, sum: $sum);
     // @phpstan-ignore argument.type (No integer value satisfies both string and integer input constraints.)
     $numbers |> $incompatible;
 
     $custom = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
     // @phpstan-ignore argument.type (This custom terminal requires object keys.)
     $numbers |> $custom;
-    // @phpstan-ignore argument.type (Combining terminals must preserve a child's key constraint.)
-    $numbers |> combine(first: first(), custom: $custom);
+    // @phpstan-ignore argument.type (Pivoting terminals must preserve a child's key constraint.)
+    $numbers |> pivot(first: first(), custom: $custom);
 
     // @phpstan-ignore argument.type (The initial accumulator must be accepted by the reducer.)
     $invalidInitial = fold(0, static fn(string $state, int $value): string => $state . $value);

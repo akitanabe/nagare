@@ -9,15 +9,15 @@ use Nagare\Tests\CompleteAfterFirstExecution;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Aggregation\combine;
 use function Nagare\Aggregation\fold;
+use function Nagare\Aggregation\pivot;
 use function Nagare\Materialization\values;
 use function Nagare\Selection\first;
 use function Nagare\Transformation\map;
 
-final class CombineTest extends TestCase
+final class PivotTest extends TestCase
 {
-    public function testCombineWithoutTerminalsDoesNotReadTheSource(): void
+    public function testPivotWithoutTerminalsDoesNotReadTheSource(): void
     {
         $sourceLog = [];
         $source = static function () use (&$sourceLog): iterable {
@@ -25,13 +25,13 @@ final class CombineTest extends TestCase
             yield 1;
         };
 
-        self::assertSame([], combine()($source()));
+        self::assertSame([], pivot()($source()));
         self::assertSame([], $sourceLog);
     }
 
-    public function testPlanCombinationAppliesEachTransformToValuesFromOneInput(): void
+    public function testPlanPivotAppliesEachTransformToValuesFromOneInput(): void
     {
-        $terminal = combine(
+        $terminal = pivot(
             a: map(static fn(int $value): int => $value + 1)
                 |> map(static fn(int $value): int => $value * 2)
                 |> values()->apply(),
@@ -46,14 +46,14 @@ final class CombineTest extends TestCase
         self::assertSame(['a' => [4, 6, 8]], $source() |> $terminal);
     }
 
-    public function testCombineBroadcastsOnePassInputToNamedTerminalsInOrder(): void
+    public function testPivotBroadcastsOnePassInputToNamedTerminalsInOrder(): void
     {
         $source = static function (): iterable {
             yield 'first' => 1;
             yield 'second' => 2;
         };
 
-        $combined = combine(
+        $pivoted = pivot(
             first: first(),
             values: values(),
             total: fold(0, static fn(int $carry, int $value): int => $carry + $value),
@@ -65,11 +65,11 @@ final class CombineTest extends TestCase
                 'values' => [1, 2],
                 'total' => 3,
             ],
-            $combined($source()),
+            $pivoted($source()),
         );
     }
 
-    public function testCombineStopsRequestingSourceWhenEveryTerminalIsComplete(): void
+    public function testPivotStopsRequestingSourceWhenEveryTerminalIsComplete(): void
     {
         $source = static function (): iterable {
             yield 'first' => 'value';
@@ -81,11 +81,11 @@ final class CombineTest extends TestCase
                 'first' => 'value',
                 'anotherFirst' => 'value',
             ],
-            combine(first: first(), anotherFirst: first())($source()),
+            pivot(first: first(), anotherFirst: first())($source()),
         );
     }
 
-    public function testCombineDoesNotSendLaterValuesToACompletedTerminal(): void
+    public function testPivotDoesNotSendLaterValuesToACompletedTerminal(): void
     {
         $executions = [];
         $shortCircuit = \Nagare\Terminal::factory(static function () use (&$executions): TerminalExecution {
@@ -100,7 +100,7 @@ final class CombineTest extends TestCase
                 'shortCircuit' => 1,
                 'values' => [1, 2],
             ],
-            combine(shortCircuit: $shortCircuit, values: values())([
+            pivot(shortCircuit: $shortCircuit, values: values())([
                 'first' => 1,
                 'second' => 2,
             ]),
@@ -109,30 +109,27 @@ final class CombineTest extends TestCase
         self::assertSame(1, $executions[0]->acceptedCount());
     }
 
-    public function testReusingCombinedTerminalKeepsEachInputIndependent(): void
+    public function testReusingPivotedTerminalKeepsEachInputIndependent(): void
     {
-        $combined = combine(values: values(), total: fold(
-            0,
-            static fn(int $carry, int $value): int => $carry + $value,
-        ));
+        $pivoted = pivot(values: values(), total: fold(0, static fn(int $carry, int $value): int => $carry + $value));
 
         self::assertSame(
             [
                 'values' => [1],
                 'total' => 1,
             ],
-            $combined(['first' => 1]),
+            $pivoted(['first' => 1]),
         );
         self::assertSame(
             [
                 'values' => [2],
                 'total' => 2,
             ],
-            $combined(['second' => 2]),
+            $pivoted(['second' => 2]),
         );
     }
 
-    public function testCombineReturnsEachTerminalDefaultForEmptyInput(): void
+    public function testPivotReturnsEachTerminalDefaultForEmptyInput(): void
     {
         self::assertSame(
             [
@@ -140,7 +137,7 @@ final class CombineTest extends TestCase
                 'values' => [],
                 'total' => 10,
             ],
-            combine(
+            pivot(
                 first: first(),
                 values: values(),
                 total: fold(10, static fn(int $carry, int $value): int => $carry + $value),
@@ -148,10 +145,10 @@ final class CombineTest extends TestCase
         );
     }
 
-    public function testCombinePropagatesChildCallbackExceptions(): void
+    public function testPivotPropagatesChildCallbackExceptions(): void
     {
         $failure = new RuntimeException('callback failure');
-        $combined = combine(total: fold(0, static function (int $carry, int $value) use ($failure): int {
+        $pivoted = pivot(total: fold(0, static function (int $carry, int $value) use ($failure): int {
             if ($value === 2) {
                 throw $failure;
             }
@@ -161,7 +158,7 @@ final class CombineTest extends TestCase
 
         $thrown = null;
         try {
-            $combined([1, 2]);
+            $pivoted([1, 2]);
             self::fail('The callback exception was not thrown.');
         } catch (RuntimeException $caught) {
             $thrown = $caught;
@@ -170,7 +167,7 @@ final class CombineTest extends TestCase
         self::assertSame($failure, $thrown);
     }
 
-    public function testCombinePropagatesSourceIteratorExceptions(): void
+    public function testPivotPropagatesSourceIteratorExceptions(): void
     {
         $failure = new RuntimeException('iterator failure');
         $source = static function () use ($failure): iterable {
@@ -180,7 +177,7 @@ final class CombineTest extends TestCase
 
         $thrown = null;
         try {
-            combine(values: values())($source());
+            pivot(values: values())($source());
             self::fail('The iterator exception was not thrown.');
         } catch (RuntimeException $caught) {
             $thrown = $caught;
