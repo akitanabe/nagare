@@ -25,6 +25,27 @@ function mapping(callable $mapper): Closure
 }
 
 /**
+ * Lazily yield each mapped iterable's keys and values in order, discarding the outer input keys.
+ *
+ * @template TInput
+ * @template TInnerKey
+ * @template TInnerValue
+ * @param callable(TInput): iterable<TInnerKey, TInnerValue> $mapper
+ * @param-later-invoked-callable $mapper
+ * @return Closure<TOuterKey>(iterable<TOuterKey, TInput>): iterable<TInnerKey, TInnerValue>
+ */
+function flatMapping(callable $mapper): Closure
+{
+    return static function (iterable $input) use ($mapper): iterable {
+        foreach ($input as $value) {
+            foreach ($mapper($value) as $key => $innerValue) {
+                yield $key => $innerValue;
+            }
+        }
+    };
+}
+
+/**
  * Lazily yield values accepted by the predicate while preserving their keys.
  *
  * @template TInput

@@ -11,6 +11,7 @@ use function Nagare\Aggregation\combine;
 use function Nagare\Aggregation\fold;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\filtering;
+use function Nagare\Pipeline\flatMapping;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Selection\first;
 use function Nagare\Transformation\map;
@@ -87,6 +88,11 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('iterable<object, string>', $objectKeys |> $mapped);
     assertType('iterable<string, string>', $stringKeys |> $mapped);
     assertType('string|null', $objectKeys |> $mapped |> $first);
+
+    $flatMapped = flatMapping(static fn(int $value): iterable => [$value => format_number($value)]);
+    assertType('iterable<int, string>', $objectKeys |> $flatMapped);
+    assertType('iterable<int, string>', $stringKeys |> $flatMapped);
+    assertType('iterable<int, int>', $objectKeys |> $flatMapped |> mapping(text_length(...)));
 
     $filtered = filtering(static fn(int $value): bool => $value > 0);
     assertType('iterable<object, int>', $objectKeys |> $filtered);
