@@ -15,6 +15,7 @@ use function Nagare\Pipeline\filtering;
 use function Nagare\Pipeline\flatMapping;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Pipeline\taking;
+use function Nagare\Pipeline\takingWhile;
 use function Nagare\Selection\first;
 use function Nagare\Transformation\map;
 use function PHPStan\Testing\assertType;
@@ -110,6 +111,11 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('iterable<object, int>', $objectKeys |> $taken);
     assertType('iterable<string, int>', $stringKeys |> $taken);
     assertType('iterable<int<0, max>, int>', $numbers |> $taken);
+
+    $takenWhile = takingWhile(static fn(int $value): bool => $value > 0);
+    assertType('iterable<object, int>', $objectKeys |> $takenWhile);
+    assertType('iterable<string, int>', $stringKeys |> $takenWhile);
+    assertType('iterable<int<0, max>, int>', $numbers |> $takenWhile);
 
     assertType('int|null', $first->__invoke($numbers));
     assertType('list<int>', $values->__invoke(...)($numbers));

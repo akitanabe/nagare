@@ -67,6 +67,29 @@ function filtering(callable $predicate): Closure
 }
 
 /**
+ * Lazily yield values while the predicate remains truthy, preserving their keys.
+ * The first value rejected by the predicate and all following input values are not yielded.
+ * On the first falsey predicate result, iteration stops without requesting the next input value.
+ *
+ * @template TInput
+ * @param callable(TInput): bool $predicate
+ * @param-later-invoked-callable $predicate
+ * @return Closure<TKey>(iterable<TKey, TInput>): iterable<TKey, TInput>
+ */
+function takingWhile(callable $predicate): Closure
+{
+    return static function (iterable $input) use ($predicate): iterable {
+        foreach ($input as $key => $value) {
+            if (!$predicate($value)) {
+                return;
+            }
+
+            yield $key => $value;
+        }
+    };
+}
+
+/**
  * Lazily yield at most the requested number of input values while preserving their keys.
  * A non-positive count yields an empty iterable without consuming the input.
  * After yielding the requested number of values, iteration stops without requesting the next input value.
