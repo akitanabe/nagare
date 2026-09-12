@@ -22,6 +22,25 @@ final class TerminalTest extends TestCase
         self::assertSame([2], $terminal(['second' => 2]));
     }
 
+    public function testFactoryCreatesFreshExecutionForEachInvocation(): void
+    {
+        $created = 0;
+        $terminal = Terminal::factory(static function () use (&$created): TerminalExecution {
+            $created++;
+
+            return new RecordingExecution(new RecordingLog());
+        });
+
+        self::assertSame('finished', $terminal([1]));
+        self::assertSame('finished', $terminal([2]));
+        self::assertSame(2, $created);
+    }
+
+    public function testTerminalConstructorIsPrivate(): void
+    {
+        self::assertTrue(new \ReflectionMethod(Terminal::class, '__construct')->isPrivate());
+    }
+
     public function testTerminalInvocationAcceptsOnlyIterableExecutionInput(): void
     {
         $terminal = values();
@@ -36,7 +55,7 @@ final class TerminalTest extends TestCase
     public function testTerminalPassesKeysOfAnyTypeAndValuesInInputOrder(): void
     {
         $log = new RecordingLog();
-        $terminal = new Terminal(static fn(): TerminalExecution => new RecordingExecution($log));
+        $terminal = Terminal::factory(static fn(): TerminalExecution => new RecordingExecution($log));
         $key = new \stdClass();
         $source = static function () use ($key): iterable {
             yield $key => 1;

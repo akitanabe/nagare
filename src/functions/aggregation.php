@@ -20,7 +20,7 @@ use Nagare\TerminalExecution;
  */
 function fold(mixed $initial, callable $fold): Terminal
 {
-    return new Terminal(static fn(): TerminalExecution => new FoldExecution($initial, $fold));
+    return Terminal::factory(static fn(): TerminalExecution => new FoldExecution($initial, $fold));
 }
 
 /**
@@ -41,5 +41,5 @@ function combine(Terminal ...$terminals): Terminal
         throw new InvalidArgumentException('Positional and named terminals cannot be mixed.');
     }
 
-    return new Terminal(static fn(): TerminalExecution => new CombineExecution($terminals));
+    return Terminal::factory(static fn(): TerminalExecution => new CombineExecution($terminals));
 }

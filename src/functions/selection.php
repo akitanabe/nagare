@@ -14,5 +14,5 @@ use Nagare\TerminalExecution;
  */
 function first(): Terminal
 {
-    return new Terminal(static fn(): TerminalExecution => new FirstExecution());
+    return Terminal::factory(static fn(): TerminalExecution => new FirstExecution());
 }

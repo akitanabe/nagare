@@ -6,6 +6,7 @@ namespace Nagare\Tests\PHPStan\Fixtures;
 
 use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
+use Nagare\Transform;
 
 use function Nagare\Aggregation\combine;
 use function Nagare\Aggregation\fold;
@@ -50,7 +51,9 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
 {
     $format = map(format_number(...));
     $length = map(text_length(...));
+    $factoryTransform = Transform::factory(format_number(...));
     assertType('string', $format->transform(1));
+    assertType('string', $factoryTransform->transform(1));
     assertType('int', ($format |> $length)->transform(1));
 
     $first = first();
@@ -128,7 +131,7 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('iterable<string, string>', $stringKeys |> mapping($format->transform(...)));
     assertType('array{total: int, count: int}', $numbers |> fold(['total' => 0, 'count' => 0], summarize(...)));
 
-    $custom = new Terminal(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
+    $custom = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
     $incrementedCustom = map(static fn(int $n): int => $n + 1) |> $custom->apply();
     assertType('string', $objectKeys |> $custom);
     assertType('string', $objectKeys |> $incrementedCustom);

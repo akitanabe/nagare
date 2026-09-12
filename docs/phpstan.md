@@ -57,3 +57,5 @@ intentional error has a line-specific identifier and reason; unmatched ignores
 fail analysis, so accepting an invalid connection causes a regression.
 
 Run `composer check` for the full test, analysis, lint, and formatting checks.
+
+For a complete application extension example, see [Custom components](custom-components.md).

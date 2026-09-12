@@ -17,5 +17,5 @@ use Nagare\Transform;
  */
 function map(callable $mapper): Transform
 {
-    return new Transform($mapper);
+    return Transform::factory($mapper);
 }

@@ -88,7 +88,7 @@ final class CombineTest extends TestCase
     public function testCombineDoesNotSendLaterValuesToACompletedTerminal(): void
     {
         $executions = [];
-        $shortCircuit = new \Nagare\Terminal(static function () use (&$executions): TerminalExecution {
+        $shortCircuit = \Nagare\Terminal::factory(static function () use (&$executions): TerminalExecution {
             $execution = new CompleteAfterFirstExecution();
             $executions[] = $execution;
 

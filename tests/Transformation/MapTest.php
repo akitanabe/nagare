@@ -53,7 +53,7 @@ final class MapTest extends TestCase
     public function testAppliedTransformPreservesSourceKeysAndOrderForTheTerminal(): void
     {
         $log = new RecordingLog();
-        $original = new Terminal(static fn(): TerminalExecution => new RecordingExecution($log));
+        $original = Terminal::factory(static fn(): TerminalExecution => new RecordingExecution($log));
         $terminal = map(static fn(int $value): int => $value * 2) |> $original->apply();
         $key = new \stdClass();
         $source = static function () use ($key): iterable {

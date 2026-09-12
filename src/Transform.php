@@ -21,9 +21,22 @@ final class Transform
     private readonly Closure $transform;
 
     /** @param callable(TInput): TOutput $transform */
-    public function __construct(callable $transform)
+    private function __construct(callable $transform)
     {
         $this->transform = $transform(...);
+    }
+
+    /**
+     * Create a reusable single-value transformation definition.
+     *
+     * @template TFactoryInput
+     * @template TFactoryOutput
+     * @param callable(TFactoryInput): TFactoryOutput $transform
+     * @return self<TFactoryInput, TFactoryOutput>
+     */
+    public static function factory(callable $transform): self
+    {
+        return new self($transform);
     }
 
     /**
@@ -52,6 +65,6 @@ final class Transform
      */
     private function then(self $next): self
     {
-        return new self(fn(mixed $value): mixed => $next->transform($this->transform($value)));
+        return self::factory(fn(mixed $value): mixed => $next->transform($this->transform($value)));
     }
 }

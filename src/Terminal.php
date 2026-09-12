@@ -23,9 +23,23 @@ final class Terminal
     private readonly Closure $createExecution;
 
     /** @param callable(): TerminalExecution<TKey, TValue, TResult> $createExecution */
-    public function __construct(callable $createExecution)
+    private function __construct(callable $createExecution)
     {
         $this->createExecution = $createExecution(...);
+    }
+
+    /**
+     * Create a reusable terminal definition.
+     *
+     * @template TFactoryKey
+     * @template TFactoryValue
+     * @template TFactoryResult
+     * @param callable(): TerminalExecution<TFactoryKey, TFactoryValue, TFactoryResult> $createExecution
+     * @return self<TFactoryKey, TFactoryValue, TFactoryResult>
+     */
+    public static function factory(callable $createExecution): self
+    {
+        return new self($createExecution);
     }
 
     /**
@@ -71,7 +85,7 @@ final class Terminal
      */
     private function applyTransform(Transform $transform): self
     {
-        return new self(fn(): TerminalExecution => new TransformExecution($this->execution(), $transform));
+        return self::factory(fn(): TerminalExecution => new TransformExecution($this->execution(), $transform));
     }
 
     /**
