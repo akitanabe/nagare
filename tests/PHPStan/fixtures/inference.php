@@ -10,7 +10,13 @@ use Nagare\Tests\PHPStan\ObjectKeyExecution;
 use function Nagare\Aggregation\combine;
 use function Nagare\Aggregation\fold;
 use function Nagare\Materialization\values;
+use function Nagare\Pipeline\dropping;
+use function Nagare\Pipeline\droppingWhile;
+use function Nagare\Pipeline\filtering;
+use function Nagare\Pipeline\flatMapping;
 use function Nagare\Pipeline\mapping;
+use function Nagare\Pipeline\taking;
+use function Nagare\Pipeline\takingWhile;
 use function Nagare\Selection\first;
 use function Nagare\Transformation\map;
 use function PHPStan\Testing\assertType;
@@ -86,6 +92,36 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('iterable<object, string>', $objectKeys |> $mapped);
     assertType('iterable<string, string>', $stringKeys |> $mapped);
     assertType('string|null', $objectKeys |> $mapped |> $first);
+
+    $flatMapped = flatMapping(static fn(int $value): iterable => [$value => format_number($value)]);
+    assertType('iterable<int, string>', $objectKeys |> $flatMapped);
+    assertType('iterable<int, string>', $stringKeys |> $flatMapped);
+    assertType('iterable<int, int>', $objectKeys |> $flatMapped |> mapping(text_length(...)));
+
+    $filtered = filtering(static fn(int $value): bool => $value > 0);
+    assertType('iterable<object, int>', $objectKeys |> $filtered);
+    assertType('iterable<string, int>', $stringKeys |> $filtered);
+    assertType('iterable<int<0, max>, int>', $numbers |> $filtered);
+
+    $dropped = dropping(2);
+    assertType('iterable<object, int>', $objectKeys |> $dropped);
+    assertType('iterable<string, int>', $stringKeys |> $dropped);
+    assertType('iterable<int<0, max>, int>', $numbers |> $dropped);
+
+    $taken = taking(2);
+    assertType('iterable<object, int>', $objectKeys |> $taken);
+    assertType('iterable<string, int>', $stringKeys |> $taken);
+    assertType('iterable<int<0, max>, int>', $numbers |> $taken);
+
+    $takenWhile = takingWhile(static fn(int $value): bool => $value > 0);
+    assertType('iterable<object, int>', $objectKeys |> $takenWhile);
+    assertType('iterable<string, int>', $stringKeys |> $takenWhile);
+    assertType('iterable<int<0, max>, int>', $numbers |> $takenWhile);
+
+    $droppedWhile = droppingWhile(static fn(int $value): bool => $value > 0);
+    assertType('iterable<object, int>', $objectKeys |> $droppedWhile);
+    assertType('iterable<string, int>', $stringKeys |> $droppedWhile);
+    assertType('iterable<int<0, max>, int>', $numbers |> $droppedWhile);
 
     assertType('int|null', $first->__invoke($numbers));
     assertType('list<int>', $values->__invoke(...)($numbers));
