@@ -13,6 +13,7 @@ use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
@@ -38,6 +39,12 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
             $functionReflection->getName(),
             [
                 'Nagare\\Selection\\first',
+                'Nagare\\Selection\\last',
+                'Nagare\\Selection\\find',
+                'Nagare\\Selection\\min',
+                'Nagare\\Selection\\max',
+                'Nagare\\Selection\\minBy',
+                'Nagare\\Selection\\maxBy',
                 'Nagare\\Materialization\\values',
                 'Nagare\\Aggregation\\pivot',
             ],
@@ -54,17 +61,51 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
             return $this->pivotedType($functionCall, $scope);
         }
 
+        if ($functionReflection->getName() === 'Nagare\\Materialization\\values') {
+            return $this->inputDependentTerminal(
+                new MixedType(),
+                static fn(Type $value): Type => TypeCombinator::intersect(
+                    new ArrayType(new IntegerType(), $value),
+                    new AccessoryArrayListType(),
+                ),
+            );
+        }
+
+        $input = in_array(
+            $functionReflection->getName(),
+            [
+                'Nagare\\Selection\\find',
+                'Nagare\\Selection\\minBy',
+                'Nagare\\Selection\\maxBy',
+            ],
+            strict: true,
+        )
+            ? ParametersAcceptorSelector::selectFromArgs(
+                $scope,
+                $functionCall->getArgs(),
+                $functionReflection->getVariants(),
+            )
+                ->getReturnType()
+                ->getTemplateType(Terminal::class, 'TValue')
+            : new MixedType();
+
+        return $this->inputDependentTerminal($input, static fn(Type $value): Type => TypeCombinator::union(
+            $value,
+            new NullType(),
+        ));
+    }
+
+    /** @param callable(Type): Type $result */
+    private function inputDependentTerminal(Type $input, callable $result): ?Type
+    {
         $value = $this->reflectionProvider->getClass(Terminal::class)->getNativeMethod('__invoke')->getVariants()[0]
             ->getTemplateTypeMap()
             ->getType('TInputValue');
         if ($value === null) {
             return null;
         }
-        $result = $functionReflection->getName() === 'Nagare\\Selection\\first'
-            ? TypeCombinator::union($value, new NullType())
-            : TypeCombinator::intersect(new ArrayType(new IntegerType(), $value), new AccessoryArrayListType());
 
-        return new GenericObjectType(Terminal::class, [new MixedType(), new MixedType(), $result]);
+        return new GenericObjectType(Terminal::class, [new MixedType(), $input, $result($value)]);
     }
 
     private function pivotedType(FuncCall $functionCall, Scope $scope): Type
