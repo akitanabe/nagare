@@ -14,7 +14,7 @@ use Nagare\TerminalExecution;
  * @template TResult
  * @implements TerminalExecution<TKey, TValue, array<int|string, TResult>>
  */
-final class CombineExecution implements TerminalExecution
+final class PivotExecution implements TerminalExecution
 {
     /** @var array<int|string, TerminalExecution<TKey, TValue, TResult>> */
     private array $executions = [];

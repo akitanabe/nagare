@@ -24,15 +24,15 @@ The extension preserves the following relationships:
 | `first()` | `T\|null` |
 | `values()` | `list<T>` |
 | `fold($initial, $reducer)` | The accumulator type |
-| `combine(first: first(), values: values())` | `array{first: T\|null, values: list<T>}` |
+| `pivot(first: first(), values: values())` | `array{first: T\|null, values: list<T>}` |
 
 The same saved `first()` or `values()` definition can be invoked with different
 element types. Each invocation infers its own result. `apply()` carries the
 transformation output into the terminal result, while `mapping()` preserves the
 source key type and changes its value type.
 
-`combine()` accepts either all positional or all named arguments. Mixing them,
-including through unpacking, throws `InvalidArgumentException` when `combine()`
+`pivot()` accepts either all positional or all named arguments. Mixing them,
+including through unpacking, throws `InvalidArgumentException` when `pivot()`
 is called. It preserves keys, nested results, and optional entries in unpacked
 array shapes. Arrays with dynamic keys retain their key and result types without
 inventing known names. Its input must satisfy every child

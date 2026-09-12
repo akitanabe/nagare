@@ -24,7 +24,110 @@ function fold(mixed $initial, callable $fold): Terminal
 }
 
 /**
- * Create a terminal that executes each supplied terminal against one input pass.
+ * Create a terminal that counts input values.
+ *
+ * @return Terminal<mixed, mixed, int>
+ */
+function count(): Terminal
+{
+    return fold(0, static fn(int $count, mixed $_value): int => $count + 1);
+}
+
+/**
+ * Create a terminal that sums integer input values.
+ *
+ * @return Terminal<mixed, int, int>
+ */
+function sum(): Terminal
+{
+    return fold(0, static fn(int $sum, int $value): int => $sum + $value);
+}
+
+/**
+ * Create a terminal that evaluates values in input order, stopping at the
+ * first matching value. Otherwise, it consumes all input and returns false.
+ * Returns false for empty input.
+ *
+ * @template TValue
+ * @param callable(TValue): bool $predicate
+ * @param-later-invoked-callable $predicate
+ * @return Terminal<mixed, TValue, bool>
+ */
+function any(callable $predicate): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
+        predicate: $predicate,
+        result: false,
+        completeWhen: true,
+        resultWhenComplete: true,
+    ));
+}
+
+/**
+ * Create a terminal that evaluates values in input order, stopping at the
+ * first non-matching value. Otherwise, it consumes all input and returns true.
+ * Returns true for empty input.
+ *
+ * @template TValue
+ * @param callable(TValue): bool $predicate
+ * @param-later-invoked-callable $predicate
+ * @return Terminal<mixed, TValue, bool>
+ */
+function all(callable $predicate): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
+        predicate: $predicate,
+        result: true,
+        completeWhen: false,
+        resultWhenComplete: false,
+    ));
+}
+
+/**
+ * Create a terminal that evaluates values in input order, stopping at the
+ * first matching value. Otherwise, it consumes all input and returns true.
+ * Returns true for empty input.
+ *
+ * @template TValue
+ * @param callable(TValue): bool $predicate
+ * @param-later-invoked-callable $predicate
+ * @return Terminal<mixed, TValue, bool>
+ */
+function none(callable $predicate): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
+        predicate: $predicate,
+        result: true,
+        completeWhen: true,
+        resultWhenComplete: false,
+    ));
+}
+
+/**
+ * Create a terminal that averages integer input values.
+ * Returns null for empty input.
+ *
+ * @return Terminal<mixed, int, float|null>
+ */
+function average(): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new AverageExecution());
+}
+
+/**
+ * Create a terminal that joins string input values in input order.
+ * Returns an empty string for empty input.
+ *
+ * @param string $separator
+ * @return Terminal<mixed, string, string>
+ */
+function join(string $separator): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new JoinExecution($separator));
+}
+
+/**
+ * Create a terminal that pivots each supplied terminal over one input pass.
  *
  * Arguments must be all positional or all named, including unpacked arguments.
  * The returned terminal produces an array keyed by terminal positions or names
@@ -35,11 +138,11 @@ function fold(mixed $initial, callable $fold): Terminal
  * @return Terminal<never, never, array<int|string, mixed>>
  * @throws InvalidArgumentException If positional and named arguments are mixed.
  */
-function combine(Terminal ...$terminals): Terminal
+function pivot(Terminal ...$terminals): Terminal
 {
     if (is_int(array_key_first($terminals)) && !array_is_list($terminals)) {
         throw new InvalidArgumentException('Positional and named terminals cannot be mixed.');
     }
 
-    return Terminal::factory(static fn(): TerminalExecution => new CombineExecution($terminals));
+    return Terminal::factory(static fn(): TerminalExecution => new PivotExecution($terminals));
 }

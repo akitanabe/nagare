@@ -8,8 +8,15 @@ use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 use Nagare\Transform;
 
-use function Nagare\Aggregation\combine;
+use function Nagare\Aggregation\all;
+use function Nagare\Aggregation\any;
+use function Nagare\Aggregation\average;
+use function Nagare\Aggregation\count;
 use function Nagare\Aggregation\fold;
+use function Nagare\Aggregation\join;
+use function Nagare\Aggregation\none;
+use function Nagare\Aggregation\pivot;
+use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\dropping;
 use function Nagare\Pipeline\droppingWhile;
@@ -83,6 +90,29 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('int', $numbers |> $sum);
     assertType('int', [] |> $sum);
 
+    $count = count();
+    $integerSum = sum();
+    $average = average();
+    $joined = join(',');
+    assertType('int', $numbers |> $count);
+    assertType('int', $strings |> $count);
+    assertType('int', [] |> $count);
+    assertType('int', $numbers |> $integerSum);
+    assertType('int', [] |> $integerSum);
+    assertType('float|null', $numbers |> $average);
+    assertType('float|null', [] |> $average);
+    assertType('string', $strings |> $joined);
+    assertType('string', [] |> $joined);
+
+    $hasPositive = any(static fn(int $value): bool => $value > 0);
+    $allPositive = all(static fn(int $value): bool => $value > 0);
+    $hasNoNegative = none(static fn(int $value): bool => $value < 0);
+    $allNonEmpty = all(static fn(string $value): bool => $value !== '');
+    assertType('bool', $numbers |> $hasPositive);
+    assertType('bool', $numbers |> $allPositive);
+    assertType('bool', $strings |> $allNonEmpty);
+    assertType('bool', [] |> $hasNoNegative);
+
     $applyFirst = $first->apply();
     $formattedFirst = $format |> $applyFirst;
     $lengthFirst = $length |> $applyFirst;
@@ -93,16 +123,16 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('list<string>', $numbers |> $formattedValues);
     assertType('int', $strings |> $lengthSum);
 
-    $combined = combine(first: $first, values: $values, total: $sum, formatted: $formattedFirst);
-    assertType('array{first: int|null, values: list<int>, total: int, formatted: string|null}', $numbers |> $combined);
-    $reusable = combine(first: $first, values: $values);
-    $lengthCombined = $length |> $reusable->apply();
+    $pivoted = pivot(first: $first, values: $values, total: $sum, formatted: $formattedFirst);
+    assertType('array{first: int|null, values: list<int>, total: int, formatted: string|null}', $numbers |> $pivoted);
+    $reusable = pivot(first: $first, values: $values);
+    $lengthPivoted = $length |> $reusable->apply();
     assertType('array{first: int|null, values: list<int>}', $numbers |> $reusable);
     assertType('array{first: string|null, values: list<string>}', $strings |> $reusable);
-    assertType('array{first: int|null, values: list<int>}', $strings |> $lengthCombined);
-    assertType('array{nested: array{first: int|null, values: list<int>}}', $numbers |> combine(nested: $reusable));
-    assertType('array{int|null, list<int>}', $numbers |> combine($first, $values));
-    assertType('array{}', $numbers |> combine());
+    assertType('array{first: int|null, values: list<int>}', $strings |> $lengthPivoted);
+    assertType('array{nested: array{first: int|null, values: list<int>}}', $numbers |> pivot(nested: $reusable));
+    assertType('array{int|null, list<int>}', $numbers |> pivot($first, $values));
+    assertType('array{}', $numbers |> pivot());
 
     $mapped = mapping(format_number(...));
     assertType('iterable<object, string>', $objectKeys |> $mapped);
@@ -148,7 +178,7 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     $incrementedCustom = map(static fn(int $n): int => $n + 1) |> $custom->apply();
     assertType('string', $objectKeys |> $custom);
     assertType('string', $objectKeys |> $incrementedCustom);
-    assertType('array{first: int|null, custom: string}', $objectKeys |> combine(first: $first, custom: $custom));
+    assertType('array{first: int|null, custom: string}', $objectKeys |> pivot(first: $first, custom: $custom));
     assertType('string', $custom->execution()->finish());
 }
 
@@ -207,34 +237,31 @@ function unrelated_default_template(mixed $value, Transform $unrelated): void
  * @param list<int> $numbers
  * @param list<string> $strings
  */
-function combined_definitions(array $numbers, array $strings, bool $includeValues, string $name): void
+function pivoted_definitions(array $numbers, array $strings, bool $includeValues, string $name): void
 {
     $terminals = ['first' => first(), 'values' => values()];
-    $combined = combine(...$terminals);
-    assertType('array{first: int|null, values: list<int>}', $numbers |> $combined);
-    assertType('array{first: string|null, values: list<string>}', $strings |> $combined);
+    $pivoted = pivot(...$terminals);
+    assertType('array{first: int|null, values: list<int>}', $numbers |> $pivoted);
+    assertType('array{first: string|null, values: list<string>}', $strings |> $pivoted);
 
     $optional = ['first' => first()];
     if ($includeValues) {
         $optional['values'] = values();
     }
-    assertType('array{first: int|null, values?: list<int>}', $numbers |> combine(...$optional));
-    assertType('non-empty-array<string, int|null>', $numbers |> combine(...[$name => first()]));
+    assertType('array{first: int|null, values?: list<int>}', $numbers |> pivot(...$optional));
+    assertType('non-empty-array<string, int|null>', $numbers |> pivot(...[$name => first()]));
 
     $terminal = $includeValues ? first() : values();
     assertType('int|list<int>|null', $numbers |> $terminal);
-    assertType('array{result: int|list<int>|null}', $numbers |> combine(result: $terminal));
+    assertType('array{result: int|list<int>|null}', $numbers |> pivot(result: $terminal));
     assertType(
         'array{first: int|null, values: list<int>, last: int|null}',
-        $numbers |> combine(...['first' => first(), 'values' => values()], last: first()),
+        $numbers |> pivot(...['first' => first(), 'values' => values()], last: first()),
     );
-    assertType(
-        'array{first: int|null, terminals: list<int>}',
-        $numbers |> combine(first: first(), terminals: values()),
-    );
+    assertType('array{first: int|null, terminals: list<int>}', $numbers |> pivot(first: first(), terminals: values()));
     assertType(
         'array{result: list<string>|string|null}',
-        $numbers |> combine(result: $terminal->apply()(map(format_number(...)))),
+        $numbers |> pivot(result: $terminal->apply()(map(format_number(...)))),
     );
 }
 
@@ -242,7 +269,7 @@ function combined_definitions(array $numbers, array $strings, bool $includeValue
  * @param list<int> $numbers
  * @param array<string, Terminal<mixed, int, string>> $terminals
  */
-function dynamic_combination(array $numbers, array $terminals): void
+function dynamic_pivot(array $numbers, array $terminals): void
 {
-    assertType('array<string, string>', $numbers |> combine(...$terminals));
+    assertType('array<string, string>', $numbers |> pivot(...$terminals));
 }

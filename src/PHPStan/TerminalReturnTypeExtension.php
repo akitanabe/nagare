@@ -39,7 +39,7 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
             [
                 'Nagare\\Selection\\first',
                 'Nagare\\Materialization\\values',
-                'Nagare\\Aggregation\\combine',
+                'Nagare\\Aggregation\\pivot',
             ],
             strict: true,
         );
@@ -50,8 +50,8 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
         FuncCall $functionCall,
         Scope $scope,
     ): ?Type {
-        if ($functionReflection->getName() === 'Nagare\\Aggregation\\combine') {
-            return $this->combinedType($functionCall, $scope);
+        if ($functionReflection->getName() === 'Nagare\\Aggregation\\pivot') {
+            return $this->pivotedType($functionCall, $scope);
         }
 
         $value = $this->reflectionProvider->getClass(Terminal::class)->getNativeMethod('__invoke')->getVariants()[0]
@@ -67,7 +67,7 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
         return new GenericObjectType(Terminal::class, [new MixedType(), new MixedType(), $result]);
     }
 
-    private function combinedType(FuncCall $functionCall, Scope $scope): Type
+    private function pivotedType(FuncCall $functionCall, Scope $scope): Type
     {
         $arguments = array_map(static function (Arg $argument): Arg {
             $original = $argument->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);

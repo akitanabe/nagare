@@ -7,8 +7,14 @@ namespace Nagare\Tests\PHPStan\Fixtures;
 use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 
-use function Nagare\Aggregation\combine;
+use function Nagare\Aggregation\all;
+use function Nagare\Aggregation\any;
+use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\fold;
+use function Nagare\Aggregation\join;
+use function Nagare\Aggregation\none;
+use function Nagare\Aggregation\pivot;
+use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Selection\first;
@@ -44,19 +50,45 @@ function incompatible_inputs(array $numbers, array $strings): void
     // @phpstan-ignore argument.type (The transformed output must satisfy the reducer input.)
     $format |> $sum->apply();
 
-    $combined = combine(values: values(), total: $sum);
-    // @phpstan-ignore argument.type, argument.templateType (Every child terminal must accept the shared source.)
-    $strings |> $combined;
+    $integerSum = sum();
+    // @phpstan-ignore argument.type (The integer sum terminal accepts integers only.)
+    $strings |> $integerSum;
+    $average = average();
+    // @phpstan-ignore argument.type (The average terminal accepts integers only.)
+    $strings |> $average;
+    $joined = join(',');
+    // @phpstan-ignore argument.type (The join terminal accepts strings only.)
+    $numbers |> $joined;
 
-    $incompatible = combine(length: $terminal, sum: $sum);
+    $hasPositive = any(static fn(int $value): bool => $value > 0);
+    // @phpstan-ignore argument.type (The any terminal predicate accepts integers only.)
+    $strings |> $hasPositive;
+    $allPositive = all(static fn(int $value): bool => $value > 0);
+    // @phpstan-ignore argument.type (The all terminal predicate accepts integers only.)
+    $strings |> $allPositive;
+    $hasNoNegative = none(static fn(int $value): bool => $value < 0);
+    // @phpstan-ignore argument.type (The none terminal predicate accepts integers only.)
+    $strings |> $hasNoNegative;
+    // @phpstan-ignore argument.type (The any predicate must return bool.)
+    any(static fn(int $value): string => (string) $value);
+    // @phpstan-ignore argument.type (The all predicate must return bool.)
+    all(static fn(int $value): string => (string) $value);
+    // @phpstan-ignore argument.type (The none predicate must return bool.)
+    none(static fn(int $value): string => (string) $value);
+
+    $pivoted = pivot(values: values(), total: $sum);
+    // @phpstan-ignore argument.type, argument.templateType (Every child terminal must accept the shared source.)
+    $strings |> $pivoted;
+
+    $incompatible = pivot(length: $terminal, sum: $sum);
     // @phpstan-ignore argument.type (No integer value satisfies both string and integer input constraints.)
     $numbers |> $incompatible;
 
     $custom = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
     // @phpstan-ignore argument.type (This custom terminal requires object keys.)
     $numbers |> $custom;
-    // @phpstan-ignore argument.type (Combining terminals must preserve a child's key constraint.)
-    $numbers |> combine(first: first(), custom: $custom);
+    // @phpstan-ignore argument.type (Pivoting terminals must preserve a child's key constraint.)
+    $numbers |> pivot(first: first(), custom: $custom);
 
     // @phpstan-ignore argument.type (The initial accumulator must be accepted by the reducer.)
     $invalidInitial = fold(0, static fn(string $state, int $value): string => $state . $value);
