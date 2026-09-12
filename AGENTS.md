@@ -10,6 +10,11 @@
 - `composer format:check`: Check formatting.
 - `composer check`: Run all checks above.
 
+## Type Inference
+
+- When implementing or changing features, preserve and improve PHPStan type inference as far as possible, including public API input/output relationships and pipeline composition.
+- Verify inferred public API types with executable `assertType()` fixtures in `tests/PHPStan/fixtures/inference.php`, alongside runtime behavior tests.
+
 ## Static Analysis Suppressions in Tests
 
 - Call the public API directly when testing inputs that intentionally violate static type contracts, such as runtime handling of contract violations.
