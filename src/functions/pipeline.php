@@ -90,6 +90,31 @@ function takingWhile(callable $predicate): Closure
 }
 
 /**
+ * Lazily skip values while the predicate remains truthy, then yield the first rejected value and all following values
+ * while preserving their keys.
+ *
+ * @template TInput
+ * @param callable(TInput): bool $predicate
+ * @param-later-invoked-callable $predicate
+ * @return Closure<TKey>(iterable<TKey, TInput>): iterable<TKey, TInput>
+ */
+function droppingWhile(callable $predicate): Closure
+{
+    return static function (iterable $input) use ($predicate): iterable {
+        $dropping = true;
+
+        foreach ($input as $key => $value) {
+            if ($dropping && $predicate($value)) {
+                continue;
+            }
+
+            $dropping = false;
+            yield $key => $value;
+        }
+    };
+}
+
+/**
  * Lazily yield at most the requested number of input values while preserving their keys.
  * A non-positive count yields an empty iterable without consuming the input.
  * After yielding the requested number of values, iteration stops without requesting the next input value.

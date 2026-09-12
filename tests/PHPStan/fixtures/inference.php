@@ -11,6 +11,7 @@ use function Nagare\Aggregation\combine;
 use function Nagare\Aggregation\fold;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\dropping;
+use function Nagare\Pipeline\droppingWhile;
 use function Nagare\Pipeline\filtering;
 use function Nagare\Pipeline\flatMapping;
 use function Nagare\Pipeline\mapping;
@@ -116,6 +117,11 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('iterable<object, int>', $objectKeys |> $takenWhile);
     assertType('iterable<string, int>', $stringKeys |> $takenWhile);
     assertType('iterable<int<0, max>, int>', $numbers |> $takenWhile);
+
+    $droppedWhile = droppingWhile(static fn(int $value): bool => $value > 0);
+    assertType('iterable<object, int>', $objectKeys |> $droppedWhile);
+    assertType('iterable<string, int>', $stringKeys |> $droppedWhile);
+    assertType('iterable<int<0, max>, int>', $numbers |> $droppedWhile);
 
     assertType('int|null', $first->__invoke($numbers));
     assertType('list<int>', $values->__invoke(...)($numbers));
