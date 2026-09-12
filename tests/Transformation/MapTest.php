@@ -4,15 +4,67 @@ declare(strict_types=1);
 
 namespace Nagare\Tests\Transformation;
 
+use Nagare\Terminal;
+use Nagare\TerminalExecution;
+use Nagare\Tests\RecordingExecution;
+use Nagare\Tests\RecordingLog;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use TypeError;
 
 use function Nagare\Materialization\values;
+use function Nagare\Selection\first;
 use function Nagare\Transformation\map;
 
 final class MapTest extends TestCase
 {
+    public function testTransformedFirstProcessesNullWithoutRequestingASecondValue(): void
+    {
+        $seen = [];
+        $terminal = map(static function (mixed $value) use (&$seen): string {
+            $seen[] = $value;
+
+            return 'transformed';
+        })
+            |> first()->apply();
+        $source = static function (): iterable {
+            yield null;
+            throw new RuntimeException('second value was requested');
+        };
+
+        self::assertSame('transformed', $terminal($source()));
+        self::assertSame([null], $seen);
+    }
+
+    public function testTransformedFirstReturnsNullWithoutTransformingEmptyInput(): void
+    {
+        $seen = [];
+        $terminal = map(static function (mixed $value) use (&$seen): mixed {
+            $seen[] = $value;
+
+            return $value;
+        })
+            |> first()->apply();
+
+        self::assertNull($terminal([]));
+        self::assertSame([], $seen);
+    }
+
+    public function testAppliedTransformPreservesSourceKeysAndOrderForTheTerminal(): void
+    {
+        $log = new RecordingLog();
+        $original = new Terminal(static fn(): TerminalExecution => new RecordingExecution($log));
+        $terminal = map(static fn(int $value): int => $value * 2) |> $original->apply();
+        $key = new \stdClass();
+        $source = static function () use ($key): iterable {
+            yield $key => 1;
+            yield 'second' => 2;
+        };
+
+        self::assertSame('finished', $terminal($source()));
+        self::assertSame([[$key, 2], ['second', 4]], $log->seen);
+    }
+
     public function testMappedValuesComposeLeftToRightBeforeValuesTerminal(): void
     {
         $firstCalls = 0;

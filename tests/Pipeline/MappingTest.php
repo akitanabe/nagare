@@ -13,6 +13,19 @@ use function Nagare\Selection\first;
 
 final class MappingTest extends TestCase
 {
+    public function testMappingEmptyInputDoesNotInvokeTheMapper(): void
+    {
+        $seen = [];
+        $mapped = mapping(static function (mixed $value) use (&$seen): mixed {
+            $seen[] = $value;
+
+            return $value;
+        });
+
+        self::assertSame([], values()($mapped([])));
+        self::assertSame([], $seen);
+    }
+
     public function testMappingIsLazyAndPreservesKeysAndOrder(): void
     {
         $calls = [];

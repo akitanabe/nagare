@@ -27,6 +27,17 @@ final class ValuesTest extends TestCase
         self::assertSame(['first', 'second'], values()($source()));
     }
 
+    public function testValuesKeepsEveryValueWhenSourceKeysRepeat(): void
+    {
+        $source = static function (): iterable {
+            yield 'repeated' => 'first';
+            yield 'repeated' => null;
+            yield 'repeated' => 'last';
+        };
+
+        self::assertSame(['first', null, 'last'], values()($source()));
+    }
+
     public function testIteratorExceptionsPropagateWithoutBeingSwallowed(): void
     {
         $failure = new RuntimeException('iterator failure');

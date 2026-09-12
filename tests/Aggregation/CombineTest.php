@@ -17,6 +17,18 @@ use function Nagare\Transformation\map;
 
 final class CombineTest extends TestCase
 {
+    public function testCombineWithoutTerminalsDoesNotReadTheSource(): void
+    {
+        $sourceLog = [];
+        $source = static function () use (&$sourceLog): iterable {
+            $sourceLog[] = 'read';
+            yield 1;
+        };
+
+        self::assertSame([], combine()($source()));
+        self::assertSame([], $sourceLog);
+    }
+
     public function testPlanCombinationAppliesEachTransformToValuesFromOneInput(): void
     {
         $terminal = combine(
