@@ -23,3 +23,24 @@ function mapping(callable $mapper): Closure
         }
     };
 }
+
+/**
+ * Lazily yield values accepted by the predicate while preserving their keys.
+ *
+ * @template TInput
+ * @param callable(TInput): bool $predicate
+ * @param-later-invoked-callable $predicate
+ * @return Closure<TKey>(iterable<TKey, TInput>): iterable<TKey, TInput>
+ */
+function filtering(callable $predicate): Closure
+{
+    return static function (iterable $input) use ($predicate): iterable {
+        foreach ($input as $key => $value) {
+            if (!$predicate($value)) {
+                continue;
+            }
+
+            yield $key => $value;
+        }
+    };
+}
