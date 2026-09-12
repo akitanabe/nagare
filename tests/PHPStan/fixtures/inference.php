@@ -122,8 +122,8 @@ function combined_definitions(array $numbers, array $strings, bool $includeValue
     assertType('int|list<int>|null', $numbers |> $terminal);
     assertType('array{result: int|list<int>|null}', $numbers |> combine(result: $terminal));
     assertType(
-        'array{0: int|null, 1: list<int>, last: int|null}',
-        $numbers |> combine(...[first(), values()], last: first()),
+        'array{first: int|null, values: list<int>, last: int|null}',
+        $numbers |> combine(...['first' => first(), 'values' => values()], last: first()),
     );
     assertType(
         'array{first: int|null, terminals: list<int>}',

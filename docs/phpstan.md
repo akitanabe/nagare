@@ -31,9 +31,11 @@ element types. Each invocation infers its own result. `apply()` carries the
 transformation output into the terminal result, while `mapping()` preserves the
 source key type and changes its value type.
 
-`combine()` preserves named and positional keys, nested results, and optional
-entries in unpacked array shapes. Arrays with dynamic keys retain their key and
-result types without inventing known names. Its input must satisfy every child
+`combine()` accepts either all positional or all named arguments. Mixing them,
+including through unpacking, throws `InvalidArgumentException` when `combine()`
+is called. It preserves keys, nested results, and optional entries in unpacked
+array shapes. Arrays with dynamic keys retain their key and result types without
+inventing known names. Its input must satisfy every child
 terminal's key and value constraints. When those constraints are incompatible,
 only an empty source can be supplied. The same requirement applies when attaching
 a transformation to a terminal selected from multiple possible definitions.

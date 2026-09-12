@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nagare\Aggregation;
 
+use InvalidArgumentException;
 use Nagare\Terminal;
 use Nagare\TerminalExecution;
 
@@ -23,16 +24,22 @@ function fold(mixed $initial, callable $fold): Terminal
 }
 
 /**
- * Create a terminal that executes each named terminal against one input pass.
+ * Create a terminal that executes each supplied terminal against one input pass.
  *
- * The returned terminal produces an array keyed by the supplied terminal names
- * in declaration order. Input is consumed once and stops when all terminals
- * are complete.
+ * Arguments must be all positional or all named, including unpacked arguments.
+ * The returned terminal produces an array keyed by terminal positions or names
+ * in declaration order. Input is consumed once and stops when all terminals are
+ * complete.
  *
  * @param Terminal<never, never, mixed> ...$terminals
  * @return Terminal<never, never, array<int|string, mixed>>
+ * @throws InvalidArgumentException If positional and named arguments are mixed.
  */
 function combine(Terminal ...$terminals): Terminal
 {
+    if (is_int(array_key_first($terminals)) && !array_is_list($terminals)) {
+        throw new InvalidArgumentException('Positional and named terminals cannot be mixed.');
+    }
+
     return new Terminal(static fn(): TerminalExecution => new CombineExecution($terminals));
 }
