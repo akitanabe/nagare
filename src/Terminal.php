@@ -45,6 +45,18 @@ final class Terminal
         return $execution->finish();
     }
 
+    /**
+     * Attach a single-value transformation to this terminal definition.
+     *
+     * @return Closure(Transform): Terminal
+     */
+    public function apply(): Closure
+    {
+        return fn(Transform $transform): Terminal => new self(
+            fn(): TerminalExecution => new TransformExecution($this->execution(), $transform),
+        );
+    }
+
     /** @internal */
     public function execution(): TerminalExecution
     {

@@ -4,6 +4,37 @@ declare(strict_types=1);
 
 namespace Nagare;
 
+use Closure;
+
+/**
+ * Create a single-value transformation.
+ *
+ * @template TInput
+ * @template TOutput
+ * @param callable(TInput): TOutput $mapper
+ */
+function map(callable $mapper): Transform
+{
+    return new Transform($mapper);
+}
+
+/**
+ * Lazily transform each value in an iterable while preserving its keys.
+ *
+ * @template TInput
+ * @template TOutput
+ * @param callable(TInput): TOutput $mapper
+ * @return Closure(iterable<int|string, TInput>): iterable<int|string, TOutput>
+ */
+function mapping(callable $mapper): Closure
+{
+    return static function (iterable $input) use ($mapper): iterable {
+        foreach ($input as $key => $value) {
+            yield $key => $mapper($value);
+        }
+    };
+}
+
 /** Create a terminal that returns the first input value, or null when empty. */
 function first(): Terminal
 {
