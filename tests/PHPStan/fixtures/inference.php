@@ -8,8 +8,12 @@ use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 use Nagare\Transform;
 
+use function Nagare\Aggregation\average;
+use function Nagare\Aggregation\count;
 use function Nagare\Aggregation\fold;
+use function Nagare\Aggregation\join;
 use function Nagare\Aggregation\pivot;
+use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\dropping;
 use function Nagare\Pipeline\droppingWhile;
@@ -82,6 +86,20 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     $sum = fold(0, static fn(int $sum, int $value): int => $sum + $value);
     assertType('int', $numbers |> $sum);
     assertType('int', [] |> $sum);
+
+    $count = count();
+    $integerSum = sum();
+    $average = average();
+    $joined = join(',');
+    assertType('int', $numbers |> $count);
+    assertType('int', $strings |> $count);
+    assertType('int', [] |> $count);
+    assertType('int', $numbers |> $integerSum);
+    assertType('int', [] |> $integerSum);
+    assertType('float|null', $numbers |> $average);
+    assertType('float|null', [] |> $average);
+    assertType('string', $strings |> $joined);
+    assertType('string', [] |> $joined);
 
     $applyFirst = $first->apply();
     $formattedFirst = $format |> $applyFirst;

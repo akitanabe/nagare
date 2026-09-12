@@ -7,8 +7,11 @@ namespace Nagare\Tests\PHPStan\Fixtures;
 use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 
+use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\fold;
+use function Nagare\Aggregation\join;
 use function Nagare\Aggregation\pivot;
+use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Selection\first;
@@ -43,6 +46,16 @@ function incompatible_inputs(array $numbers, array $strings): void
     $strings |> $sum;
     // @phpstan-ignore argument.type (The transformed output must satisfy the reducer input.)
     $format |> $sum->apply();
+
+    $integerSum = sum();
+    // @phpstan-ignore argument.type (The integer sum terminal accepts integers only.)
+    $strings |> $integerSum;
+    $average = average();
+    // @phpstan-ignore argument.type (The average terminal accepts integers only.)
+    $strings |> $average;
+    $joined = join(',');
+    // @phpstan-ignore argument.type (The join terminal accepts strings only.)
+    $numbers |> $joined;
 
     $pivoted = pivot(values: values(), total: $sum);
     // @phpstan-ignore argument.type, argument.templateType (Every child terminal must accept the shared source.)

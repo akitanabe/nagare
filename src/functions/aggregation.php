@@ -24,6 +24,49 @@ function fold(mixed $initial, callable $fold): Terminal
 }
 
 /**
+ * Create a terminal that counts input values.
+ *
+ * @return Terminal<mixed, mixed, int>
+ */
+function count(): Terminal
+{
+    return fold(0, static fn(int $count, mixed $_value): int => $count + 1);
+}
+
+/**
+ * Create a terminal that sums integer input values.
+ *
+ * @return Terminal<mixed, int, int>
+ */
+function sum(): Terminal
+{
+    return fold(0, static fn(int $sum, int $value): int => $sum + $value);
+}
+
+/**
+ * Create a terminal that averages integer input values.
+ * Returns null for empty input.
+ *
+ * @return Terminal<mixed, int, float|null>
+ */
+function average(): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new AverageExecution());
+}
+
+/**
+ * Create a terminal that joins string input values in input order.
+ * Returns an empty string for empty input.
+ *
+ * @param string $separator
+ * @return Terminal<mixed, string, string>
+ */
+function join(string $separator): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new JoinExecution($separator));
+}
+
+/**
  * Create a terminal that pivots each supplied terminal over one input pass.
  *
  * Arguments must be all positional or all named, including unpacked arguments.
