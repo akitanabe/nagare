@@ -144,7 +144,7 @@ final class MapTest extends TestCase
 
         $this->expectException(TypeError::class);
 
-        /** @phpstan-ignore argument.type (Transform values are executed through transform(), not __invoke().) */
+        /** @phpstan-ignore argument.type, argument.templateType (Transform values are executed through transform(), not __invoke().) */
         $transform(1);
     }
 }

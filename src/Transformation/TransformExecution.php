@@ -7,9 +7,20 @@ namespace Nagare\Transformation;
 use Nagare\TerminalExecution;
 use Nagare\Transform;
 
-/** @internal */
+/**
+ * @internal
+ * @template TKey
+ * @template TInput
+ * @template TOutput
+ * @template TResult
+ * @implements TerminalExecution<TKey, TInput, TResult>
+ */
 final class TransformExecution implements TerminalExecution
 {
+    /**
+     * @param TerminalExecution<TKey, TOutput, TResult> $execution
+     * @param Transform<TInput, TOutput> $transform
+     */
     public function __construct(
         private TerminalExecution $execution,
         private Transform $transform,

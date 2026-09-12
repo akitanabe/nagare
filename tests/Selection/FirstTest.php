@@ -44,6 +44,7 @@ final class FirstTest extends TestCase
 
     public function testFirstReturnsNullForEmptyInput(): void
     {
+        // @phpstan-ignore staticMethod.alreadyNarrowedType (The empty-input result must also be verified at runtime.)
         self::assertNull(first()([]));
     }
 }

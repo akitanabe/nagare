@@ -6,6 +6,7 @@ namespace Nagare\Tests;
 
 use Nagare\TerminalExecution;
 
+/** @implements TerminalExecution<mixed, mixed, int> */
 final class CompleteAfterFirstExecution implements TerminalExecution
 {
     private int $accepted = 0;

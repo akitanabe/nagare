@@ -12,13 +12,17 @@ use Nagare\Transformation\TransformExecution;
  *
  * The factory is evaluated for every invocation, so mutable execution state
  * belongs to one invocation and cannot leak into another one.
+ *
+ * @template-contravariant TKey
+ * @template-contravariant TValue
+ * @template-covariant TResult
  */
 final class Terminal
 {
-    /** @var Closure(): TerminalExecution */
+    /** @var Closure(): TerminalExecution<TKey, TValue, TResult> */
     private readonly Closure $createExecution;
 
-    /** @param callable(): TerminalExecution $createExecution */
+    /** @param callable(): TerminalExecution<TKey, TValue, TResult> $createExecution */
     public function __construct(callable $createExecution)
     {
         $this->createExecution = $createExecution(...);
@@ -27,7 +31,11 @@ final class Terminal
     /**
      * Evaluate this terminal against one iterable input.
      *
-     * @param iterable<mixed, mixed> $input
+     * The PHPStan extension uses TInputValue to specialize input-dependent results.
+     *
+     * @template TInputValue of TValue
+     * @param iterable<TKey, TValue&TInputValue> $input
+     * @return TResult
      */
     public function __invoke(iterable $input): mixed
     {
@@ -49,16 +57,27 @@ final class Terminal
     /**
      * Attach a single-value transformation to this terminal definition.
      *
-     * @return Closure(Transform): Terminal
+     * @return Closure<TSource>(Transform<TSource, TValue>): Terminal<TKey, TSource, TResult>
      */
     public function apply(): Closure
     {
-        return fn(Transform $transform): Terminal => new self(
-            fn(): TerminalExecution => new TransformExecution($this->execution(), $transform),
-        );
+        return $this->applyTransform(...);
     }
 
-    /** @internal */
+    /**
+     * @template TSource
+     * @param Transform<TSource, TValue> $transform
+     * @return Terminal<TKey, TSource, TResult>
+     */
+    private function applyTransform(Transform $transform): self
+    {
+        return new self(fn(): TerminalExecution => new TransformExecution($this->execution(), $transform));
+    }
+
+    /**
+     * @internal
+     * @return TerminalExecution<TKey, TValue, TResult>
+     */
     public function execution(): TerminalExecution
     {
         return ($this->createExecution)();

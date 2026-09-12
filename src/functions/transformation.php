@@ -12,6 +12,8 @@ use Nagare\Transform;
  * @template TInput
  * @template TOutput
  * @param callable(TInput): TOutput $mapper
+ * @param-later-invoked-callable $mapper
+ * @return Transform<TInput, TOutput>
  */
 function map(callable $mapper): Transform
 {

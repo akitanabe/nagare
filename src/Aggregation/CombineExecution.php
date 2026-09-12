@@ -7,14 +7,20 @@ namespace Nagare\Aggregation;
 use Nagare\Terminal;
 use Nagare\TerminalExecution;
 
-/** @internal */
+/**
+ * @internal
+ * @template TKey
+ * @template TValue
+ * @template TResult
+ * @implements TerminalExecution<TKey, TValue, array<int|string, TResult>>
+ */
 final class CombineExecution implements TerminalExecution
 {
-    /** @var array<int|string, TerminalExecution> */
+    /** @var array<int|string, TerminalExecution<TKey, TValue, TResult>> */
     private array $executions = [];
 
     /**
-     * @param array<int|string, Terminal> $terminals
+     * @param array<int|string, Terminal<TKey, TValue, TResult>> $terminals
      */
     public function __construct(array $terminals)
     {

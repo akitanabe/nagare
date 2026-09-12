@@ -6,11 +6,16 @@ namespace Nagare\Selection;
 
 use Nagare\TerminalExecution;
 
-/** @internal */
+/**
+ * @internal
+ * @template TValue
+ * @implements TerminalExecution<mixed, TValue, TValue|null>
+ */
 final class FirstExecution implements TerminalExecution
 {
     private bool $hasValue = false;
 
+    /** @var TValue|null */
     private mixed $value = null;
 
     public function accept(mixed $value, mixed $key): void

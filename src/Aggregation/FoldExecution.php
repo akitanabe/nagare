@@ -6,15 +6,24 @@ namespace Nagare\Aggregation;
 
 use Nagare\TerminalExecution;
 
-/** @internal */
+/**
+ * @internal
+ * @template TValue
+ * @template TAccumulator
+ * @implements TerminalExecution<mixed, TValue, TAccumulator>
+ */
 final class FoldExecution implements TerminalExecution
 {
+    /** @var TAccumulator */
     private mixed $result;
 
-    /** @var \Closure(mixed, mixed): mixed */
+    /** @var \Closure(TAccumulator, TValue): TAccumulator */
     private \Closure $fold;
 
-    /** @param callable(mixed, mixed): mixed $fold */
+    /**
+     * @param TAccumulator $initial
+     * @param callable(TAccumulator, TValue): TAccumulator $fold
+     */
     public function __construct(mixed $initial, callable $fold)
     {
         $this->result = $initial;

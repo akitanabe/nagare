@@ -6,6 +6,7 @@ namespace Nagare\Tests;
 
 use Nagare\TerminalExecution;
 
+/** @implements TerminalExecution<mixed, mixed, string> */
 final class RecordingExecution implements TerminalExecution
 {
     public function __construct(

@@ -12,7 +12,8 @@ use Closure;
  * @template TInput
  * @template TOutput
  * @param callable(TInput): TOutput $mapper
- * @return Closure(iterable<mixed, TInput>): iterable<mixed, TOutput>
+ * @param-later-invoked-callable $mapper
+ * @return Closure<TKey>(iterable<TKey, TInput>): iterable<TKey, TOutput>
  */
 function mapping(callable $mapper): Closure
 {

@@ -1,0 +1,9 @@
+services:
+    -
+        class: Nagare\PHPStan\TerminalReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicFunctionReturnTypeExtension
+    -
+        class: Nagare\PHPStan\TerminalApplyReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension

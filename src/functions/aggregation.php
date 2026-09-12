@@ -14,6 +14,8 @@ use Nagare\TerminalExecution;
  * @template TValue
  * @param TAccumulator $initial
  * @param callable(TAccumulator, TValue): TAccumulator $fold
+ * @param-later-invoked-callable $fold
+ * @return Terminal<mixed, TValue, TAccumulator>
  */
 function fold(mixed $initial, callable $fold): Terminal
 {
@@ -27,7 +29,8 @@ function fold(mixed $initial, callable $fold): Terminal
  * in declaration order. Input is consumed once and stops when all terminals
  * are complete.
  *
- * @param Terminal ...$terminals
+ * @param Terminal<never, never, mixed> ...$terminals
+ * @return Terminal<never, never, array<int|string, mixed>>
  */
 function combine(Terminal ...$terminals): Terminal
 {

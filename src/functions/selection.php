@@ -7,7 +7,11 @@ namespace Nagare\Selection;
 use Nagare\Terminal;
 use Nagare\TerminalExecution;
 
-/** Create a terminal that returns the first input value, or null when empty. */
+/**
+ * Create a terminal that returns the first input value, or null when empty.
+ *
+ * @return Terminal<mixed, mixed, mixed>
+ */
 function first(): Terminal
 {
     return new Terminal(static fn(): TerminalExecution => new FirstExecution());

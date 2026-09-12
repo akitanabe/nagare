@@ -11,33 +11,44 @@ use Closure;
  *
  * Transformations are definitions only. They do not retain a value or any
  * state from an execution, so a composed transformation can be reused.
+ *
+ * @template-contravariant TInput
+ * @template-covariant TOutput
  */
 final class Transform
 {
-    /** @var Closure(mixed): mixed */
+    /** @var Closure(TInput): TOutput */
     private readonly Closure $transform;
 
-    /** @param callable(mixed): mixed $transform */
+    /** @param callable(TInput): TOutput $transform */
     public function __construct(callable $transform)
     {
         $this->transform = $transform(...);
     }
 
-    /** Compose this transformation after the previous one in a pipe. */
+    /**
+     * @template TPrevious
+     * @param self<TPrevious, TInput> $previous
+     * @return self<TPrevious, TOutput>
+     */
     public function __invoke(self $previous): self
     {
         return $previous->then($this);
     }
 
-    /** Apply this transformation to one value. */
+    /**
+     * @param TInput $value
+     * @return TOutput
+     */
     public function transform(mixed $value): mixed
     {
         return ($this->transform)($value);
     }
 
     /**
-     * Return a transformation that applies this transformation and then the
-     * supplied next transformation.
+     * @template TNext
+     * @param self<TOutput, TNext> $next
+     * @return self<TInput, TNext>
      */
     private function then(self $next): self
     {

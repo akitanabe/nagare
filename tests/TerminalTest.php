@@ -29,7 +29,7 @@ final class TerminalTest extends TestCase
 
         $this->expectException(TypeError::class);
 
-        /** @phpstan-ignore argument.type (The runtime contract intentionally rejects transforms as terminal input.) */
+        /** @phpstan-ignore argument.type, argument.templateType (The runtime contract intentionally rejects transforms as terminal input.) */
         $terminal($transform);
     }
 

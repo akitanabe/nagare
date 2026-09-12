@@ -6,10 +6,14 @@ namespace Nagare\Materialization;
 
 use Nagare\TerminalExecution;
 
-/** @internal */
+/**
+ * @internal
+ * @template TValue
+ * @implements TerminalExecution<mixed, TValue, list<TValue>>
+ */
 final class ValuesExecution implements TerminalExecution
 {
-    /** @var list<mixed> */
+    /** @var list<TValue> */
     private array $values = [];
 
     public function accept(mixed $value, mixed $key): void
@@ -22,7 +26,7 @@ final class ValuesExecution implements TerminalExecution
         return false;
     }
 
-    /** @return list<mixed> */
+    /** @return list<TValue> */
     public function finish(): mixed
     {
         return $this->values;
