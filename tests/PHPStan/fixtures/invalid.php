@@ -7,20 +7,20 @@ namespace Nagare\Tests\PHPStan\Fixtures;
 use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 
-use function Nagare\Aggregation\all;
-use function Nagare\Aggregation\any;
 use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\fold;
 use function Nagare\Aggregation\join;
-use function Nagare\Aggregation\none;
+use function Nagare\Aggregation\maxBy;
+use function Nagare\Aggregation\minBy;
 use function Nagare\Aggregation\pivot;
 use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\mapping;
-use function Nagare\Selection\find;
-use function Nagare\Selection\first;
-use function Nagare\Selection\maxBy;
-use function Nagare\Selection\minBy;
+use function Nagare\Query\all;
+use function Nagare\Query\any;
+use function Nagare\Query\find;
+use function Nagare\Query\first;
+use function Nagare\Query\none;
 use function Nagare\Transformation\map;
 use function Nagare\Transformation\then;
 

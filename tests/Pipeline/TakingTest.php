@@ -9,7 +9,7 @@ use RuntimeException;
 
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\taking;
-use function Nagare\Selection\first;
+use function Nagare\Query\first;
 
 final class TakingTest extends TestCase
 {

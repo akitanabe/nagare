@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 use function Nagare\Aggregation\pivot;
 use function Nagare\Materialization\values;
-use function Nagare\Selection\first;
+use function Nagare\Query\first;
 
 final class PivotArgumentsTest extends TestCase
 {

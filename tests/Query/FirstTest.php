@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Nagare\Tests\Selection;
+namespace Nagare\Tests\Query;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Selection\first;
+use function Nagare\Query\first;
 
 final class FirstTest extends TestCase
 {

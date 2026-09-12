@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Nagare\Selection;
+namespace Nagare\Query;
 
 use Nagare\TerminalExecution;
 

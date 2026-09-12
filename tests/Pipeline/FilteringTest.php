@@ -9,7 +9,7 @@ use RuntimeException;
 
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\filtering;
-use function Nagare\Selection\first;
+use function Nagare\Query\first;
 
 final class FilteringTest extends TestCase
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Nagare\Tests\Selection;
+namespace Nagare\Tests\Aggregation;
 
 final readonly class ScoredItem
 {
