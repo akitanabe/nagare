@@ -14,5 +14,5 @@ use Nagare\TerminalExecution;
  */
 function values(): Terminal
 {
-    return new Terminal(static fn(): TerminalExecution => new ValuesExecution());
+    return Terminal::factory(static fn(): TerminalExecution => new ValuesExecution());
 }

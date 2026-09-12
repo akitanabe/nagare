@@ -47,7 +47,7 @@ function incompatible_inputs(array $numbers, array $strings): void
     // @phpstan-ignore argument.type (No integer value satisfies both string and integer input constraints.)
     $numbers |> $incompatible;
 
-    $custom = new Terminal(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
+    $custom = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
     // @phpstan-ignore argument.type (This custom terminal requires object keys.)
     $numbers |> $custom;
     // @phpstan-ignore argument.type (Combining terminals must preserve a child's key constraint.)
