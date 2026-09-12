@@ -19,7 +19,10 @@ use function Nagare\Pipeline\mapping;
 use function Nagare\Pipeline\taking;
 use function Nagare\Pipeline\takingWhile;
 use function Nagare\Selection\first;
+use function Nagare\Transformation\defaults;
+use function Nagare\Transformation\defaultsOr;
 use function Nagare\Transformation\map;
+use function Nagare\Transformation\then;
 use function PHPStan\Testing\assertType;
 
 function format_number(int $value): string
@@ -30,6 +33,16 @@ function format_number(int $value): string
 function text_length(string $value): int
 {
     return strlen($value);
+}
+
+function nullable_length(string $value): ?int
+{
+    return $value === '' ? null : strlen($value);
+}
+
+function created_text(): string
+{
+    return 'created';
 }
 
 /**
@@ -137,6 +150,57 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('string', $objectKeys |> $incrementedCustom);
     assertType('array{first: int|null, custom: string}', $objectKeys |> combine(first: $first, custom: $custom));
     assertType('string', $custom->execution()->finish());
+}
+
+function transformation_defaults(int $integerFallback, string $textFallback, ?int $nullableInteger): void
+{
+    $positive = then(static fn(int $value): bool => $value > 0);
+    assertType('int|null', $positive->transform(1));
+    assertType('int', defaults($integerFallback)->transform(null));
+    assertType('string', defaultsOr(created_text(...))->transform(null));
+
+    $fixedDefault = defaults($textFallback);
+    $factoryDefault = defaultsOr(created_text(...));
+    assertType('int|string', $fixedDefault->transform($nullableInteger));
+    assertType('int|string', $factoryDefault->transform($nullableInteger));
+    assertType('string', ($fixedDefault |> $factoryDefault)->transform(null));
+    $nestedDefault = defaults($fixedDefault);
+    assertType('int|string', $nestedDefault->transform(null)->transform($nullableInteger));
+
+    $nullableNumber = map(nullable_length(...));
+    assertType('int|string', ($nullableNumber |> $fixedDefault)->transform('value'));
+    assertType('int|string', ($nullableNumber |> $factoryDefault)->transform('value'));
+    assertType('int', ($positive |> defaults(0))->transform(1));
+    assertType('int', ($positive |> defaultsOr(static fn(): int => 0))->transform(1));
+
+    $format = map(format_number(...));
+    assertType('string|null', ($format |> then(static fn(string $value): bool => $value !== ''))->transform(1));
+    assertType(
+        'string',
+        ($format |> then(static fn(string $value): bool => $value !== '') |> defaults('missing'))->transform(1),
+    );
+
+    $nullableDefaultValues = $nullableNumber |> $fixedDefault |> values()->apply();
+    $nullableFactoryValues = $nullableNumber |> $factoryDefault |> values()->apply();
+    $selectedValues = $positive |> values()->apply();
+    $selectedDefaultValues = $positive |> defaults(0) |> values()->apply();
+    assertType('list<int|string>', ['one', ''] |> $nullableDefaultValues);
+    assertType('list<int|string>', ['one', ''] |> $nullableFactoryValues);
+    assertType('list<int|null>', [1, 0] |> $selectedValues);
+    assertType('list<int>', [1, 0] |> $selectedDefaultValues);
+}
+
+/**
+ * @template TInput
+ * @param TInput $value
+ * @param Transform<mixed, TInput> $unrelated
+ */
+function unrelated_default_template(mixed $value, Transform $unrelated): void
+{
+    assertType(
+        'TInput (function Nagare\\Tests\\PHPStan\\Fixtures\\unrelated_default_template(), argument)',
+        $unrelated->transform('input'),
+    );
 }
 
 /**
