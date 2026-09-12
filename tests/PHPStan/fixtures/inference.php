@@ -10,6 +10,7 @@ use Nagare\Tests\PHPStan\ObjectKeyExecution;
 use function Nagare\Aggregation\combine;
 use function Nagare\Aggregation\fold;
 use function Nagare\Materialization\values;
+use function Nagare\Pipeline\dropping;
 use function Nagare\Pipeline\filtering;
 use function Nagare\Pipeline\flatMapping;
 use function Nagare\Pipeline\mapping;
@@ -99,6 +100,11 @@ function inferred_results(array $numbers, array $strings, iterable $objectKeys, 
     assertType('iterable<object, int>', $objectKeys |> $filtered);
     assertType('iterable<string, int>', $stringKeys |> $filtered);
     assertType('iterable<int<0, max>, int>', $numbers |> $filtered);
+
+    $dropped = dropping(2);
+    assertType('iterable<object, int>', $objectKeys |> $dropped);
+    assertType('iterable<string, int>', $stringKeys |> $dropped);
+    assertType('iterable<int<0, max>, int>', $numbers |> $dropped);
 
     $taken = taking(2);
     assertType('iterable<object, int>', $objectKeys |> $taken);

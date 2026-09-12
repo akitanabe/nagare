@@ -92,3 +92,27 @@ function taking(int $count): Closure
         }
     };
 }
+
+/**
+ * Lazily skip the requested number of input values and yield the rest in their original iteration order
+ * while preserving their keys.
+ * A non-positive count does not skip any values.
+ *
+ * @param int $count
+ * @return Closure<TKey, TValue>(iterable<TKey, TValue>): iterable<TKey, TValue>
+ */
+function dropping(int $count): Closure
+{
+    return static function (iterable $input) use ($count): iterable {
+        $remaining = max(0, $count);
+
+        foreach ($input as $key => $value) {
+            if ($remaining > 0) {
+                $remaining--;
+                continue;
+            }
+
+            yield $key => $value;
+        }
+    };
+}
