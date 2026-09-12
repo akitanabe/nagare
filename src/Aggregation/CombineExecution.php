@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Nagare;
+namespace Nagare\Aggregation;
+
+use Nagare\Terminal;
+use Nagare\TerminalExecution;
 
 /** @internal */
 final class CombineExecution implements TerminalExecution

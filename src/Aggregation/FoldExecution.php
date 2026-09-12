@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Nagare;
+namespace Nagare\Aggregation;
+
+use Nagare\TerminalExecution;
 
 /** @internal */
 final class FoldExecution implements TerminalExecution

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nagare;
 
 use Closure;
+use Nagare\Transformation\TransformExecution;
 
 /**
  * A reusable terminal definition.

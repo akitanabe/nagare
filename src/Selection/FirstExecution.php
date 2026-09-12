@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Nagare;
+namespace Nagare\Selection;
+
+use Nagare\TerminalExecution;
 
 /** @internal */
 final class FirstExecution implements TerminalExecution

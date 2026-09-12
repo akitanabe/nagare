@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Nagare;
+namespace Nagare\Transformation;
+
+use Nagare\TerminalExecution;
+use Nagare\Transform;
 
 /** @internal */
 final class TransformExecution implements TerminalExecution

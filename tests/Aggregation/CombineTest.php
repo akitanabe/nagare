@@ -2,19 +2,38 @@
 
 declare(strict_types=1);
 
-namespace Nagare\Tests;
+namespace Nagare\Tests\Aggregation;
 
 use Nagare\TerminalExecution;
+use Nagare\Tests\CompleteAfterFirstExecution;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\combine;
-use function Nagare\first;
-use function Nagare\fold;
-use function Nagare\values;
+use function Nagare\Aggregation\combine;
+use function Nagare\Aggregation\fold;
+use function Nagare\Materialization\values;
+use function Nagare\Selection\first;
+use function Nagare\Transformation\map;
 
 final class CombineTest extends TestCase
 {
+    public function testPlanCombinationAppliesEachTransformToValuesFromOneInput(): void
+    {
+        $terminal = combine(
+            a: map(static fn(int $value): int => $value + 1)
+                |> map(static fn(int $value): int => $value * 2)
+                |> values()->apply(),
+        );
+
+        $source = static function (): iterable {
+            yield 1;
+            yield 2;
+            yield 3;
+        };
+
+        self::assertSame(['a' => [4, 6, 8]], $source() |> $terminal);
+    }
+
     public function testCombineBroadcastsOnePassInputToNamedTerminalsInOrder(): void
     {
         $source = static function (): iterable {
