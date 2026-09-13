@@ -6,6 +6,10 @@ services:
         tags:
             - phpstan.broker.dynamicFunctionReturnTypeExtension
     -
+        class: Nagare\PHPStan\MaterializationReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicFunctionReturnTypeExtension
+    -
         class: Nagare\PHPStan\TerminalApplyReturnTypeExtension
         tags:
             - phpstan.broker.dynamicMethodReturnTypeExtension

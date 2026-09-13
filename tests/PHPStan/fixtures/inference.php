@@ -18,6 +18,9 @@ use function Nagare\Aggregation\min;
 use function Nagare\Aggregation\minBy;
 use function Nagare\Aggregation\pivot;
 use function Nagare\Aggregation\sum;
+use function Nagare\Materialization\associate;
+use function Nagare\Materialization\entries;
+use function Nagare\Materialization\keys;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\dropping;
 use function Nagare\Pipeline\droppingWhile;
@@ -56,6 +59,11 @@ function nullable_length(string $value): ?int
 function created_text(): string
 {
     return 'created';
+}
+
+function select_string_key(int $value, string $key): string
+{
+    return (string) $value;
 }
 
 /**
@@ -134,6 +142,24 @@ function inferred_results(
     assertType('list<int>', $numbers |> $values);
     assertType('list<string>', $strings |> $values);
     assertType('list<int>', $objectKeys |> $values);
+
+    $keys = keys();
+    assertType('list<int<0, max>>', $numbers |> $keys);
+    assertType('list<string>', $stringKeys |> $keys);
+    assertType('list<object>', $objectKeys |> $keys);
+
+    $associated = associate();
+    assertType('array<int<0, max>, int>', $numbers |> $associated);
+    assertType('array<string, int>', $stringKeys |> $associated);
+    assertType('array<string, int>', $stringKeys |> associate(null));
+
+    $selectedAssociation = associate(select_string_key(...));
+    assertType('array<string, int>', $stringKeys |> $selectedAssociation);
+
+    $entries = entries();
+    assertType('list<array{int<0, max>, int}>', $numbers |> $entries);
+    assertType('list<array{string, int}>', $stringKeys |> $entries);
+    assertType('list<array{object, int}>', $objectKeys |> $entries);
 
     $sum = fold(0, static fn(int $sum, int $value): int => $sum + $value);
     assertType('int', $numbers |> $sum);

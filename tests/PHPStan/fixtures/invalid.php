@@ -14,6 +14,7 @@ use function Nagare\Aggregation\maxBy;
 use function Nagare\Aggregation\minBy;
 use function Nagare\Aggregation\pivot;
 use function Nagare\Aggregation\sum;
+use function Nagare\Materialization\associate;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Query\all;
@@ -27,8 +28,9 @@ use function Nagare\Transformation\then;
 /**
  * @param list<int> $numbers
  * @param list<string> $strings
+ * @param iterable<object, int> $objectKeys
  */
-function incompatible_inputs(array $numbers, array $strings): void
+function incompatible_inputs(array $numbers, array $strings, iterable $objectKeys): void
 {
     $format = map(format_number(...));
     $length = map(text_length(...));
@@ -109,6 +111,13 @@ function incompatible_inputs(array $numbers, array $strings): void
     $invalidInitial = fold(0, static fn(string $state, int $value): string => $state . $value);
     // @phpstan-ignore argument.type (Each reducer result becomes the next accumulator input.)
     $invalidResult = fold(0, static fn(int $state, int $value): string => (string) ($state + $value));
+
+    // @phpstan-ignore argument.type (An object selector key intentionally violates associate's array-key contract.)
+    associate(static fn(int $value, string $key): object => (object) ['value' => $value]);
+    // @phpstan-ignore argument.type (Associate requires PHP array-compatible input keys.)
+    $objectKeys |> associate();
+    // @phpstan-ignore argument.type (Selecting a new key does not relax associate's input-key contract.)
+    $objectKeys |> associate(static fn(int $value, mixed $key): string => (string) $value);
 }
 
 function incompatible_definition_alternatives(bool $chooseStrings): void
