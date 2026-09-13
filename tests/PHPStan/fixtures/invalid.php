@@ -118,6 +118,10 @@ function incompatible_inputs(array $numbers, array $strings, iterable $objectKey
     $objectKeys |> associate();
     // @phpstan-ignore argument.type (Selecting a new key does not relax associate's input-key contract.)
     $objectKeys |> associate(static fn(int $value, mixed $key): string => (string) $value);
+
+    $integerAssociation = associate(static fn(int $value): int => $value);
+    // @phpstan-ignore argument.type, argument.templateType (The key selector accepts integer values only.)
+    $strings |> $integerAssociation;
 }
 
 function incompatible_definition_alternatives(bool $chooseStrings): void
