@@ -311,6 +311,7 @@ function unrelated_default_template(mixed $value, Transform $unrelated): void
 /**
  * @param list<int> $numbers
  * @param list<string> $strings
+ * @mago-expect lint:no-boolean-flag-parameter Boolean branches intentionally exercise optional and union inference.
  */
 function pivoted_definitions(array $numbers, array $strings, bool $includeValues, string $name): void
 {
