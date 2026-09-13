@@ -124,6 +124,7 @@ function incompatible_inputs(array $numbers, array $strings, iterable $objectKey
     $strings |> $integerAssociation;
 }
 
+/** @mago-expect lint:no-boolean-flag-parameter Boolean branches intentionally exercise incompatible union alternatives. */
 function incompatible_definition_alternatives(bool $chooseStrings): void
 {
     $strings = fold('', static fn(string $state, string $value): string => $state . $value);

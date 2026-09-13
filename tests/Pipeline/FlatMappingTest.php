@@ -147,12 +147,15 @@ final class FlatMappingTest extends TestCase
     public function testFlatMappingPropagatesInnerIteratorExceptions(): void
     {
         $failure = new RuntimeException('inner iterator failure');
-        $flattened = flatMapping(static function (int $value) use ($failure): iterable {
-            return (static function () use ($failure, $value): iterable {
-                yield $value;
-                throw $failure;
-            })();
-        });
+        $flattened = flatMapping(
+            /** @mago-expect lint:prefer-arrow-function Arrow conversion conflicts with PHPStan's Generator return inference. */
+            static function (int $value) use ($failure): iterable {
+                return (static function () use ($failure, $value): iterable {
+                    yield $value;
+                    throw $failure;
+                })();
+            },
+        );
 
         try {
             values()($flattened([1]));

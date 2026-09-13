@@ -79,16 +79,9 @@ function summarize(array $state, int $value): array
  * @param list<int> $numbers
  * @param list<string> $strings
  * @param list<positive-int> $positiveNumbers
- * @param iterable<object, int> $objectKeys
- * @param array<string, int> $stringKeys
  */
-function inferred_results(
-    array $numbers,
-    array $strings,
-    array $positiveNumbers,
-    iterable $objectKeys,
-    array $stringKeys,
-): void {
+function transformation_and_query_results(array $numbers, array $strings, array $positiveNumbers): void
+{
     $format = map(format_number(...));
     $length = map(text_length(...));
     $factoryTransform = Transform::factory(format_number(...));
@@ -137,7 +130,20 @@ function inferred_results(
     assertType('string|null', $numbers |> $formattedFound);
     assertType('string|null', $numbers |> $formattedMinimumByLength);
     assertType('string|null', $numbers |> $formattedMaximumByLength);
+}
 
+/**
+ * @param list<int> $numbers
+ * @param list<string> $strings
+ * @param iterable<object, int> $objectKeys
+ * @param array<string, int> $stringKeys
+ */
+function materialization_and_aggregation_results(
+    array $numbers,
+    array $strings,
+    iterable $objectKeys,
+    array $stringKeys,
+): void {
     $values = values();
     assertType('list<int>', $numbers |> $values);
     assertType('list<string>', $strings |> $values);
@@ -187,7 +193,20 @@ function inferred_results(
     assertType('bool', $numbers |> $allPositive);
     assertType('bool', $strings |> $allNonEmpty);
     assertType('bool', [] |> $hasNoNegative);
+}
 
+/**
+ * @param list<int> $numbers
+ * @param list<string> $strings
+ * @param iterable<object, int> $objectKeys
+ */
+function terminal_composition_results(array $numbers, array $strings, iterable $objectKeys): void
+{
+    $format = map(format_number(...));
+    $length = map(text_length(...));
+    $first = first();
+    $values = values();
+    $sum = fold(0, static fn(int $sum, int $value): int => $sum + $value);
     $applyFirst = $first->apply();
     $formattedFirst = $format |> $applyFirst;
     $lengthFirst = $length |> $applyFirst;
@@ -209,6 +228,27 @@ function inferred_results(
     assertType('array{int|null, list<int>}', $numbers |> pivot($first, $values));
     assertType('array{}', $numbers |> pivot());
 
+    assertType('int|null', $first->__invoke($numbers));
+    assertType('list<int>', $values->__invoke(...)($numbers));
+    assertType('array{total: int, count: int}', $numbers |> fold(['total' => 0, 'count' => 0], summarize(...)));
+
+    $custom = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
+    $incrementedCustom = map(static fn(int $n): int => $n + 1) |> $custom->apply();
+    assertType('string', $objectKeys |> $custom);
+    assertType('string', $objectKeys |> $incrementedCustom);
+    assertType('array{first: int|null, custom: string}', $objectKeys |> pivot(first: $first, custom: $custom));
+    assertType('string', $custom->execution()->finish());
+}
+
+/**
+ * @param list<int> $numbers
+ * @param iterable<object, int> $objectKeys
+ * @param array<string, int> $stringKeys
+ */
+function pipeline_results(array $numbers, iterable $objectKeys, array $stringKeys): void
+{
+    $format = map(format_number(...));
+    $first = first();
     $mapped = mapping(format_number(...));
     assertType('iterable<object, string>', $objectKeys |> $mapped);
     assertType('iterable<string, string>', $stringKeys |> $mapped);
@@ -244,17 +284,7 @@ function inferred_results(
     assertType('iterable<string, int>', $stringKeys |> $droppedWhile);
     assertType('iterable<int<0, max>, int>', $numbers |> $droppedWhile);
 
-    assertType('int|null', $first->__invoke($numbers));
-    assertType('list<int>', $values->__invoke(...)($numbers));
     assertType('iterable<string, string>', $stringKeys |> mapping($format->transform(...)));
-    assertType('array{total: int, count: int}', $numbers |> fold(['total' => 0, 'count' => 0], summarize(...)));
-
-    $custom = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
-    $incrementedCustom = map(static fn(int $n): int => $n + 1) |> $custom->apply();
-    assertType('string', $objectKeys |> $custom);
-    assertType('string', $objectKeys |> $incrementedCustom);
-    assertType('array{first: int|null, custom: string}', $objectKeys |> pivot(first: $first, custom: $custom));
-    assertType('string', $custom->execution()->finish());
 }
 
 function transformation_defaults(int $integerFallback, string $textFallback, ?int $nullableInteger): void
@@ -311,6 +341,7 @@ function unrelated_default_template(mixed $value, Transform $unrelated): void
 /**
  * @param list<int> $numbers
  * @param list<string> $strings
+ * @mago-expect lint:no-boolean-flag-parameter Boolean branches intentionally exercise optional and union inference.
  */
 function pivoted_definitions(array $numbers, array $strings, bool $includeValues, string $name): void
 {
