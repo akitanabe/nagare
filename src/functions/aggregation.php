@@ -44,62 +44,62 @@ function sum(): Terminal
 }
 
 /**
- * Create a terminal that evaluates values in input order, stopping at the
- * first matching value. Otherwise, it consumes all input and returns false.
- * Returns false for empty input.
+ * Create a terminal that returns the smallest input value, or null when empty.
  *
- * @template TValue
- * @param callable(TValue): bool $predicate
- * @param-later-invoked-callable $predicate
- * @return Terminal<mixed, TValue, bool>
+ * @return Terminal<mixed, mixed, mixed>
  */
-function any(callable $predicate): Terminal
+function min(): Terminal
 {
-    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
-        predicate: $predicate,
-        result: false,
-        completeWhen: true,
-        resultWhenComplete: true,
+    return Terminal::factory(static fn(): TerminalExecution => new ExtremeExecution(
+        selector: static fn(mixed $value): mixed => $value,
+        minimum: true,
     ));
 }
 
 /**
- * Create a terminal that evaluates values in input order, stopping at the
- * first non-matching value. Otherwise, it consumes all input and returns true.
- * Returns true for empty input.
+ * Create a terminal that returns the largest input value, or null when empty.
  *
- * @template TValue
- * @param callable(TValue): bool $predicate
- * @param-later-invoked-callable $predicate
- * @return Terminal<mixed, TValue, bool>
+ * @return Terminal<mixed, mixed, mixed>
  */
-function all(callable $predicate): Terminal
+function max(): Terminal
 {
-    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
-        predicate: $predicate,
-        result: true,
-        completeWhen: false,
-        resultWhenComplete: false,
+    return Terminal::factory(static fn(): TerminalExecution => new ExtremeExecution(
+        selector: static fn(mixed $value): mixed => $value,
+        minimum: false,
     ));
 }
 
 /**
- * Create a terminal that evaluates values in input order, stopping at the
- * first matching value. Otherwise, it consumes all input and returns true.
- * Returns true for empty input.
+ * Create a terminal that returns the input value whose selected value is smallest, or null when empty.
  *
  * @template TValue
- * @param callable(TValue): bool $predicate
- * @param-later-invoked-callable $predicate
- * @return Terminal<mixed, TValue, bool>
+ * @template TSelection
+ * @param callable(TValue): TSelection $selector
+ * @param-later-invoked-callable $selector
+ * @return Terminal<mixed, TValue, TValue|null>
  */
-function none(callable $predicate): Terminal
+function minBy(callable $selector): Terminal
 {
-    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
-        predicate: $predicate,
-        result: true,
-        completeWhen: true,
-        resultWhenComplete: false,
+    return Terminal::factory(static fn(): TerminalExecution => new ExtremeExecution(
+        selector: $selector,
+        minimum: true,
+    ));
+}
+
+/**
+ * Create a terminal that returns the input value whose selected value is largest, or null when empty.
+ *
+ * @template TValue
+ * @template TSelection
+ * @param callable(TValue): TSelection $selector
+ * @param-later-invoked-callable $selector
+ * @return Terminal<mixed, TValue, TValue|null>
+ */
+function maxBy(callable $selector): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new ExtremeExecution(
+        selector: $selector,
+        minimum: false,
     ));
 }
 

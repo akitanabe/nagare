@@ -38,13 +38,13 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
         return in_array(
             $functionReflection->getName(),
             [
-                'Nagare\\Selection\\first',
-                'Nagare\\Selection\\last',
-                'Nagare\\Selection\\find',
-                'Nagare\\Selection\\min',
-                'Nagare\\Selection\\max',
-                'Nagare\\Selection\\minBy',
-                'Nagare\\Selection\\maxBy',
+                'Nagare\\Query\\first',
+                'Nagare\\Query\\last',
+                'Nagare\\Query\\find',
+                'Nagare\\Aggregation\\min',
+                'Nagare\\Aggregation\\max',
+                'Nagare\\Aggregation\\minBy',
+                'Nagare\\Aggregation\\maxBy',
                 'Nagare\\Materialization\\values',
                 'Nagare\\Aggregation\\pivot',
             ],
@@ -74,9 +74,9 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
         $input = in_array(
             $functionReflection->getName(),
             [
-                'Nagare\\Selection\\find',
-                'Nagare\\Selection\\minBy',
-                'Nagare\\Selection\\maxBy',
+                'Nagare\\Query\\find',
+                'Nagare\\Aggregation\\minBy',
+                'Nagare\\Aggregation\\maxBy',
             ],
             strict: true,
         )

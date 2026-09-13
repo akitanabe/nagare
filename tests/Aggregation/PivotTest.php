@@ -12,7 +12,7 @@ use RuntimeException;
 use function Nagare\Aggregation\fold;
 use function Nagare\Aggregation\pivot;
 use function Nagare\Materialization\values;
-use function Nagare\Selection\first;
+use function Nagare\Query\first;
 use function Nagare\Transformation\map;
 
 final class PivotTest extends TestCase

@@ -16,7 +16,7 @@
       "src/functions/aggregation.php",
       "src/functions/materialization.php",
       "src/functions/pipeline.php",
-      "src/functions/selection.php",
+      "src/functions/query.php",
       "src/functions/transformation.php"
     ],
     "psr-4": {

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Nagare\Tests\Aggregation;
+namespace Nagare\Tests\Query;
 
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Aggregation\all;
-use function Nagare\Aggregation\any;
-use function Nagare\Aggregation\none;
+use function Nagare\Query\all;
+use function Nagare\Query\any;
+use function Nagare\Query\none;
 
-final class PredicateAggregationTest extends TestCase
+final class PredicateQueryTest extends TestCase
 {
     public function testAnyReturnsTrueAtTheFirstMatchingValueAndStopsReadingInput(): void
     {

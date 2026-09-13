@@ -9,7 +9,7 @@ use RuntimeException;
 
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\mapping;
-use function Nagare\Selection\first;
+use function Nagare\Query\first;
 
 final class MappingTest extends TestCase
 {
