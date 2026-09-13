@@ -1,4 +1,7 @@
 [source]
 paths = ["src", "tests"]
 
+[linter.rules.function-name]
+either = true
+
 [formatter]
