@@ -89,13 +89,18 @@ final class MaterializationReturnTypeExtension implements DynamicFunctionReturnT
 
         $acceptor = $scope->getType($selector->value)->getCallableParametersAcceptors($scope)[0];
         $parameters = $acceptor->getParameters();
-        $value = $parameters[0]->getType();
+        $value = ($parameters[0] ?? null)?->getType() ?? new MixedType();
         $arrayKey = TypeCombinator::union(new IntegerType(), new StringType());
         $key = TypeCombinator::intersect(($parameters[1] ?? null)?->getType() ?? $arrayKey, $arrayKey);
+        $selectedKey = $acceptor->getReturnType()->toArrayKey();
+        if (!$scope->getType($selector->value)->isNull()->no()) {
+            $key = $this->materializationKey($name, $key);
+            $selectedKey = TypeCombinator::union($selectedKey, $key);
+        }
 
         return $this->inputDependentTerminal(
             $value,
-            static fn(Type $input): Type => new ArrayType($acceptor->getReturnType(), $input),
+            static fn(Type $input): Type => new ArrayType($selectedKey, $input),
             $key,
         );
     }

@@ -76,6 +76,31 @@ final class AssociateTest extends TestCase
         self::assertSame(['second' => 2], $terminal(['second' => 2]));
     }
 
+    public function testAssociateAllowsSelectorsThatIgnoreBothValueAndKey(): void
+    {
+        $terminal = associate(static fn(): string => 'same');
+
+        self::assertSame(['same' => 2], $terminal([1, 2]));
+        self::assertSame(['same' => 'last'], $terminal(['first', 'last']));
+    }
+
+    public function testAssociateConvertsSelectedNumericStringsToIntegerArrayKeys(): void
+    {
+        $terminal = associate(static fn(int $value): string => '123');
+
+        self::assertSame([123 => 2], $terminal([1, 2]));
+    }
+
+    public function testAssociatePreservesOrReselectsKeysWithAnOptionalSelector(): void
+    {
+        $results = [];
+        foreach ([null, static fn(int $value): string => "item_{$value}"] as $selector) {
+            $results[] = associate($selector)([2, 3]);
+        }
+
+        self::assertSame([[2, 3], ['item_2' => 2, 'item_3' => 3]], $results);
+    }
+
     public function testAssociatePropagatesNativeTypeErrorForObjectSelectorKeys(): void
     {
         // @phpstan-ignore argument.type (An object selector key intentionally exercises native array assignment failure.)

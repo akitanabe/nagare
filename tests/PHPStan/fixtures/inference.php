@@ -348,3 +348,36 @@ function dynamic_pivot(array $numbers, array $terminals): void
 {
     assertType('array<string, string>', $numbers |> pivot(...$terminals));
 }
+
+/**
+ * @param list<int> $numbers
+ * @param list<string> $strings
+ * @param (callable(int): string)|null $selector
+ */
+function associate_selector_variants(array $numbers, array $strings, ?callable $selector, string $key): void
+{
+    $constantKey = associate(static fn(): string => $key);
+    assertType('array<string, int>', $numbers |> $constantKey);
+    assertType('array<string, string>', $strings |> $constantKey);
+    assertType('array<int<0, max>|string, int>', $numbers |> associate($selector));
+    assertType('array<123, int>', $numbers |> associate(static fn(int $value): string => '123'));
+}
+
+/**
+ * @param array<string, int> $stringKeys
+ * @param iterable<object, int> $objectKeys
+ */
+function materialization_composition(array $stringKeys, iterable $objectKeys): void
+{
+    $format = map(format_number(...));
+    $formattedKeys = $format |> keys()->apply();
+    $formattedEntries = $format |> entries()->apply();
+    $formattedAssociation = $format |> associate()->apply();
+    assertType('list<object>', $objectKeys |> $formattedKeys);
+    assertType('list<array{object, string}>', $objectKeys |> $formattedEntries);
+    assertType('array<string, string>', $stringKeys |> $formattedAssociation);
+    assertType(
+        'array{keys: list<string>, entries: list<array{string, int}>, associated: array<string, int>}',
+        $stringKeys |> pivot(keys: keys(), entries: entries(), associated: associate()),
+    );
+}
