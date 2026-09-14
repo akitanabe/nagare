@@ -33,8 +33,10 @@ use function Nagare\Pipeline\taking;
 use function Nagare\Pipeline\takingWhile;
 use function Nagare\Query\all;
 use function Nagare\Query\any;
+use function Nagare\Query\contains;
 use function Nagare\Query\find;
 use function Nagare\Query\first;
+use function Nagare\Query\isEmpty;
 use function Nagare\Query\last;
 use function Nagare\Query\none;
 use function Nagare\Transformation\defaults;
@@ -114,6 +116,15 @@ function transformation_and_query_results(array $numbers, array $strings, array 
     assertType('int|null', $numbers |> $found);
     assertType('int<1, max>|null', $positiveNumbers |> $found);
     assertType('null', [] |> $found);
+
+    $empty = isEmpty();
+    $containsOne = contains(1);
+    assertType('bool', $numbers |> $empty);
+    assertType('bool', $strings |> $empty);
+    assertType('bool', [] |> $empty);
+    assertType('bool', $numbers |> $containsOne);
+    assertType('bool', $strings |> $containsOne);
+    assertType('bool', [] |> $containsOne);
 
     $minimumBy = minBy(static fn(int $value): int => $value);
     $maximumBy = maxBy(static fn(int $value): int => $value);
@@ -195,6 +206,11 @@ function materialization_and_aggregation_results(
     assertType('bool', $numbers |> $allPositive);
     assertType('bool', $strings |> $allNonEmpty);
     assertType('bool', [] |> $hasNoNegative);
+
+    $empty = isEmpty();
+    $containsOne = contains(1);
+    assertType('bool', $objectKeys |> $empty);
+    assertType('bool', $objectKeys |> $containsOne);
 }
 
 /**
