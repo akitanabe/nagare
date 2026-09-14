@@ -1,22 +1,22 @@
 {
   "name": "akitanabe/nagare",
-  "description": "A PHP application.",
+  "description": "Declarative iterable processing for PHP using the pipe operator.",
   "type": "project",
   "license": "MIT",
   "require": {
     "php": "^8.5"
   },
   "require-dev": {
-    "carthage-software/mago": "^1.47",
+    "carthage-software/mago": "^1.48",
     "phpstan/phpstan": "^2.2",
     "phpunit/phpunit": "^12.5"
   },
   "autoload": {
     "files": [
       "src/functions/adapter.php",
+      "src/functions/pipeline.php",
       "src/functions/terminal/aggregation.php",
       "src/functions/terminal/materialization.php",
-      "src/functions/pipeline.php",
       "src/functions/terminal/query.php"
     ],
     "psr-4": {

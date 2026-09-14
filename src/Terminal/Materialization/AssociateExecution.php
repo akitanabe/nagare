@@ -31,6 +31,7 @@ final class AssociateExecution implements TerminalExecution
     public function accept(mixed $value, mixed $key): void
     {
         $selectedKey = $this->keySelector === null ? $key : ($this->keySelector)($value, $key);
+        // @phpstan-ignore assign.propertyType (The nullable selector preserves TKey when absent, which PHPStan cannot relate to TSelectedKey.)
         $this->associated[$selectedKey] = $value;
     }
 
