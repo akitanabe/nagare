@@ -20,6 +20,7 @@ the pipe operator and run only after the resulting terminal receives input.
 | `fallbackWith(callable(): TFallback)` | Call the factory once for each `null`; do not call it for present values. |
 | `filter(callable(TValue): bool)` | Forward the original value only when the predicate is PHP-truthy. Its static predicate contract is `bool`. |
 | `some()` | Reject only `null`; forward `false`, `0`, `0.0`, and `''`. |
+| `none()` | Forward only `null`; reject present values, including `false`, `0`, `0.0`, and `''`. |
 | `filterMap(callable(TInput): TOutput\|null)` | Call the mapper once per input, reject `null`, and forward every non-null output. |
 
 Use `then()` when a rejected predicate result must remain visible to the

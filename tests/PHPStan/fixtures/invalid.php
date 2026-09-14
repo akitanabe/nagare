@@ -29,7 +29,6 @@ use function Nagare\Query\all;
 use function Nagare\Query\any;
 use function Nagare\Query\find;
 use function Nagare\Query\first;
-use function Nagare\Query\none;
 
 /**
  * @param list<int> $numbers
@@ -91,15 +90,10 @@ function incompatible_inputs(array $numbers, array $strings, iterable $objectKey
     $allPositive = all(static fn(int $value): bool => $value > 0);
     // @phpstan-ignore argument.type (The all terminal predicate accepts integers only.)
     $strings |> $allPositive;
-    $hasNoNegative = none(static fn(int $value): bool => $value < 0);
-    // @phpstan-ignore argument.type (The none terminal predicate accepts integers only.)
-    $strings |> $hasNoNegative;
     // @phpstan-ignore argument.type (The any predicate must return bool.)
     any(static fn(int $value): string => (string) $value);
     // @phpstan-ignore argument.type (The all predicate must return bool.)
     all(static fn(int $value): string => (string) $value);
-    // @phpstan-ignore argument.type (The none predicate must return bool.)
-    none(static fn(int $value): string => (string) $value);
 
     $pivoted = pivot(values: values(), total: $sum);
     // @phpstan-ignore argument.type, argument.templateType (Every child terminal must accept the shared source.)

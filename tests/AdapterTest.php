@@ -13,6 +13,7 @@ use function Nagare\Adapter\fallbackWith;
 use function Nagare\Adapter\filter;
 use function Nagare\Adapter\filterMap;
 use function Nagare\Adapter\map;
+use function Nagare\Adapter\none;
 use function Nagare\Adapter\some;
 use function Nagare\Adapter\then;
 use function Nagare\Materialization\entries;
@@ -29,6 +30,7 @@ final class AdapterTest extends TestCase
         self::assertEmptyResult(fallbackWith(static fn(): int => 0));
         self::assertEmptyResult(filter(static fn(int $value): bool => $value > 0));
         self::assertEmptyResult(some());
+        self::assertEmptyResult(none());
         self::assertEmptyResult(filterMap(static fn(int $value): ?int => $value > 0 ? $value : null));
     }
 
@@ -129,7 +131,7 @@ final class AdapterTest extends TestCase
         self::assertSame([1], (filter($truthiness) |> values()->apply())([1, 2, 3]));
     }
 
-    public function testSomeRejectsOnlyNullAndPreservesKeysAndOrder(): void
+    public function testSomeAndNonePreserveMatchingValuesKeysAndOrder(): void
     {
         $source = static function (): iterable {
             yield 'null' => null;
@@ -138,10 +140,15 @@ final class AdapterTest extends TestCase
             yield 'empty' => '';
         };
         $adapter = some();
+        $none = none();
 
         self::assertSame([false, 0, ''], ($adapter |> values()->apply())($source()));
         self::assertSame(['false', 'zero', 'empty'], ($adapter |> keys()->apply())($source()));
         self::assertSame([['false', false], ['zero', 0], ['empty', '']], ($adapter |> entries()->apply())($source()));
+
+        self::assertSame([null], ($none |> values()->apply())($source()));
+        self::assertSame(['null'], ($none |> keys()->apply())($source()));
+        self::assertSame([['null', null]], ($none |> entries()->apply())($source()));
     }
 
     public function testFilterMapTraversesOnceMapsEachItemOnceAndAcceptsEachNonNullResultOnce(): void
