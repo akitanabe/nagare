@@ -45,6 +45,7 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
                 'Nagare\\Aggregation\\max',
                 'Nagare\\Aggregation\\minBy',
                 'Nagare\\Aggregation\\maxBy',
+                'Nagare\\Aggregation\\unique',
                 'Nagare\\Materialization\\values',
                 'Nagare\\Aggregation\\pivot',
             ],
@@ -61,7 +62,11 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
             return $this->pivotedType($functionCall, $scope);
         }
 
-        if ($functionReflection->getName() === 'Nagare\\Materialization\\values') {
+        if (in_array(
+            $functionReflection->getName(),
+            ['Nagare\\Aggregation\\unique', 'Nagare\\Materialization\\values'],
+            strict: true,
+        )) {
             return $this->inputDependentTerminal(
                 new MixedType(),
                 static fn(Type $value): Type => TypeCombinator::intersect(

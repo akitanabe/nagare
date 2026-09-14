@@ -127,6 +127,65 @@ function join(string $separator): Terminal
 }
 
 /**
+ * Create a terminal that returns the first occurrence of each strictly equal input value.
+ *
+ * @return Terminal<mixed, mixed, list<mixed>>
+ */
+function unique(): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new UniqueExecution());
+}
+
+/**
+ * Create a terminal that returns the first input value for each strictly equal selected value.
+ *
+ * @template TValue
+ * @template TIdentity
+ * @param callable(TValue): TIdentity $selector
+ * @param-later-invoked-callable $selector
+ * @return Terminal<mixed, TValue, list<TValue>>
+ */
+function uniqueBy(callable $selector): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new UniqueExecution($selector));
+}
+
+/**
+ * Create a terminal that counts input values by their selected array key.
+ * Result keys retain the order in which they first occur in the input.
+ * Selected keys follow PHP's native array-key conversion; a value that cannot
+ * be used as an array key causes a TypeError.
+ *
+ * @template TValue
+ * @template TKey of array-key
+ * @param callable(TValue): TKey $selector
+ * @param-later-invoked-callable $selector
+ * @return Terminal<mixed, TValue, array<TKey, int>>
+ */
+function countBy(callable $selector): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new CountByExecution($selector));
+}
+
+/**
+ * Create a terminal that groups input values by their selected array key.
+ * Groups retain the order in which their keys first occur in the input, and
+ * values within each group retain input order. Selected keys follow PHP's
+ * native array-key conversion; a value that cannot be used as an array key
+ * causes a TypeError.
+ *
+ * @template TValue
+ * @template TKey of array-key
+ * @param callable(TValue): TKey $selector
+ * @param-later-invoked-callable $selector
+ * @return Terminal<mixed, TValue, array<TKey, list<TValue>>>
+ */
+function groupBy(callable $selector): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new GroupByExecution($selector));
+}
+
+/**
  * Create a terminal that pivots each supplied terminal over one input pass.
  *
  * Arguments must be all positional or all named, including unpacked arguments.

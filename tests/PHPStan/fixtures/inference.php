@@ -10,7 +10,9 @@ use Nagare\Transform;
 
 use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\count;
+use function Nagare\Aggregation\countBy;
 use function Nagare\Aggregation\fold;
+use function Nagare\Aggregation\groupBy;
 use function Nagare\Aggregation\join;
 use function Nagare\Aggregation\max;
 use function Nagare\Aggregation\maxBy;
@@ -18,6 +20,8 @@ use function Nagare\Aggregation\min;
 use function Nagare\Aggregation\minBy;
 use function Nagare\Aggregation\pivot;
 use function Nagare\Aggregation\sum;
+use function Nagare\Aggregation\unique;
+use function Nagare\Aggregation\uniqueBy;
 use function Nagare\Materialization\associate;
 use function Nagare\Materialization\entries;
 use function Nagare\Materialization\keys;
@@ -211,6 +215,39 @@ function materialization_and_aggregation_results(
     $containsOne = contains(1);
     assertType('bool', $objectKeys |> $empty);
     assertType('bool', $objectKeys |> $containsOne);
+}
+
+/**
+ * @param list<int> $numbers
+ * @param list<string> $strings
+ */
+function collection_aggregation_results(array $numbers, array $strings): void
+{
+    $unique = unique();
+    $uniqueByParity = uniqueBy(static fn(int $value): int => $value % 2);
+    $countByParity = countBy(static fn(int $value): int => $value % 2);
+    $groupByParity = groupBy(static fn(int $value): int => $value % 2);
+    assertType('list<int>', $numbers |> $unique);
+    assertType('list<string>', $strings |> $unique);
+    assertType('list<int>', $numbers |> $uniqueByParity);
+    assertType('array<int, int>', $numbers |> $countByParity);
+    assertType('array<int, list<int>>', $numbers |> $groupByParity);
+    assertType(
+        'array{unique: list<int>, uniqueBy: list<int>, counts: array<int, int>, groups: array<int, list<int>>}',
+        $numbers |> pivot(unique: $unique, uniqueBy: $uniqueByParity, counts: $countByParity, groups: $groupByParity),
+    );
+
+    $uniqueStringsByLength = uniqueBy(text_length(...));
+    $countStringsByLength = countBy(text_length(...));
+    $groupStringsByLength = groupBy(text_length(...));
+    assertType('list<string>', $strings |> $uniqueStringsByLength);
+    assertType('array<int, int>', $strings |> $countStringsByLength);
+    assertType('array<int, list<string>>', $strings |> $groupStringsByLength);
+    assertType(
+        'array{uniqueBy: list<string>, counts: array<int, int>, groups: array<int, list<string>>}',
+        $strings
+            |> pivot(uniqueBy: $uniqueStringsByLength, counts: $countStringsByLength, groups: $groupStringsByLength),
+    );
 }
 
 /**
