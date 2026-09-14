@@ -17,8 +17,7 @@
       "src/functions/aggregation.php",
       "src/functions/materialization.php",
       "src/functions/pipeline.php",
-      "src/functions/query.php",
-      "src/functions/transformation.php"
+      "src/functions/query.php"
     ],
     "psr-4": {
       "Nagare\\": "src/"

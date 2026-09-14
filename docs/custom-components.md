@@ -1,42 +1,10 @@
 # Custom components
 
-Nagare exposes reusable definitions at three extension points.
-`Transform::factory()` creates a single-value transformation,
+Nagare exposes reusable definitions at two extension points.
 `Terminal::factory()` creates a terminal from a `TerminalExecution` factory,
 and `TerminalAdapter` lets an application adapt values immediately before a
-terminal consumes them. The examples below use a small pricing domain.
-
-## Define a reusable Transform
-
-`Transform` is a definition, not a value in the input sequence. Give its
-callable an input and output type that describe the application contract. The
-definition is stateless and can be reused for multiple values and executions.
-
-Save this as `src/PricingComponents.php` in an application:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Pricing;
-
-use Nagare\Transform;
-
-/**
- * Add the application's fixed handling fee to one price.
- *
- * @return Transform<int, int>
- */
-function addHandlingFee(): Transform
-{
-    return Transform::factory(static fn(int $cents): int => $cents + 50);
-}
-```
-
-Use `Transform::factory()` again when the application needs another reusable
-single-value operation. Transformations compose in the order in which they are
-connected, and composing definitions does not execute their callbacks.
+terminal consumes them. `Nagare\Adapter` provides the built-in adapter
+definitions. The examples below use a small pricing domain.
 
 ## Adapt terminal values
 
@@ -46,7 +14,7 @@ the pipe operator and run only after the resulting terminal receives input.
 
 | Factory | Terminal-local behavior |
 | --- | --- |
-| `map(callable(TInput): TOutput)` | Transform and forward every input. |
+| `map(callable(TInput): TOutput)` | Map and forward every input. |
 | `then(callable(TValue): mixed)` | Forward the original value when the result is PHP-truthy; otherwise forward `null`. It never rejects an input. |
 | `defaults(TFallback)` | Replace only `null` with the fixed fallback. |
 | `defaultsOr(callable(): TFallback)` | Call the factory once for each `null`; do not call it for present values. |
@@ -216,48 +184,10 @@ source; `Terminal` owns traversal and short-circuiting.
 
 ## Compose custom and built-in components
 
-The public `Terminal::apply()` connection accepts any `TerminalAdapter`,
-including both `Transform` and `Nagare\Adapter\Definition`. It returns a
-terminal that accepts the adapter input and passes its output to the original
-terminal. The built-in `values()` terminal can therefore be combined with the
-custom transformation as follows:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Pricing;
-
-use function Nagare\Materialization\values;
-
-$pricesWithFee = addHandlingFee() |> values()->apply();
-
-$result = $pricesWithFee(['coffee' => 250, 'tea' => 400]);
-
-// $result === [300, 450]
-```
-
-The same custom Transform can be attached to the custom terminal:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Pricing;
-
-$totalWithFee = addHandlingFee() |> totalCents()->apply();
-
-$result = $totalWithFee([250, 400]);
-
-// $result === 750
-```
-
-Both definitions remain reusable. Calling either terminal with another
-iterable creates a fresh execution for that call.
-
-The custom adapter has the same connection syntax:
+The public `Terminal::apply()` connection accepts any `TerminalAdapter`. It
+returns a terminal that accepts the adapter input and passes its output to the
+original terminal. A custom adapter has the same connection syntax as a
+built-in `Nagare\Adapter\Definition`:
 
 ```php
 <?php
@@ -277,9 +207,8 @@ $result = $parsedPrices(['coffee' => '250', 'tea' => '400']);
 
 ## Test components independently
 
-Test the public result of a custom Transform directly, and test the custom
-terminal directly with an iterable. These tests do not depend on a composed
-full pipeline. A separate test can cover composition with a built-in terminal.
+Test the custom terminal directly with an iterable. A separate test can cover
+a custom adapter's composition with a built-in terminal.
 
 Save this as `tests/PricingComponentsTest.php`:
 
@@ -292,7 +221,6 @@ namespace App\Pricing\Tests;
 
 use PHPUnit\Framework\TestCase;
 
-use function App\Pricing\addHandlingFee;
 use function App\Pricing\totalCents;
 use function Nagare\Materialization\values;
 
@@ -300,11 +228,6 @@ require_once __DIR__ . '/../src/PricingComponents.php';
 
 final class PricingComponentsTest extends TestCase
 {
-    public function testHandlingFeeTransformsOnePrice(): void
-    {
-        self::assertSame(300, addHandlingFee()->transform(250));
-    }
-
     public function testTotalCentsReturnsTheTotalAndStartsFreshForEachInput(): void
     {
         $total = totalCents();
@@ -313,18 +236,18 @@ final class PricingComponentsTest extends TestCase
         self::assertSame(50, $total(['only' => 50]));
     }
 
-    public function testCustomTransformComposesWithBuiltInValues(): void
+    public function testCustomAdapterComposesWithBuiltInValues(): void
     {
-        $pricesWithFee = addHandlingFee() |> values()->apply();
+        $parsedPrices = new ParseCentsAdapter() |> values()->apply();
 
-        self::assertSame([300, 450], $pricesWithFee([250, 400]));
+        self::assertSame([250, 400], $parsedPrices(['250', '400']));
     }
 }
 ```
 
-The first two tests isolate the custom components and their observable
-contracts. The third test verifies the connection to a built-in Nagare
-terminal without inspecting callbacks, constructors, or execution internals.
+The first test isolates the custom terminal's observable contract. The second
+test verifies the custom adapter's connection to a built-in Nagare terminal
+without inspecting callbacks, constructors, or execution internals.
 
 For the generic contracts used by custom executions and factories, see
 [PHPStan types](phpstan.md).

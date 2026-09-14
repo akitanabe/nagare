@@ -7,12 +7,12 @@ namespace Nagare\Tests\PHPStan\Fixtures;
 use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 use Nagare\Tests\TerminalAdapter\StringLengthAdapter;
-use Nagare\Transform;
 
 use function Nagare\Adapter\defaults as adapterDefaults;
 use function Nagare\Adapter\defaultsOr as adapterDefaultsOr;
 use function Nagare\Adapter\filter as adapterFilter;
 use function Nagare\Adapter\filterMap as adapterFilterMap;
+use function Nagare\Adapter\map;
 use function Nagare\Adapter\map as adapterMap;
 use function Nagare\Adapter\some as adapterSome;
 use function Nagare\Adapter\then as adapterThen;
@@ -52,10 +52,6 @@ use function Nagare\Query\first;
 use function Nagare\Query\isEmpty;
 use function Nagare\Query\last;
 use function Nagare\Query\none;
-use function Nagare\Transformation\defaults;
-use function Nagare\Transformation\defaultsOr;
-use function Nagare\Transformation\map;
-use function Nagare\Transformation\then;
 use function PHPStan\Testing\assertType;
 
 function format_number(int $value): string
@@ -97,14 +93,9 @@ function summarize(array $state, int $value): array
  * @param list<string> $strings
  * @param list<positive-int> $positiveNumbers
  */
-function transformation_and_query_results(array $numbers, array $strings, array $positiveNumbers): void
+function adapter_and_query_results(array $numbers, array $strings, array $positiveNumbers): void
 {
     $format = map(format_number(...));
-    $length = map(text_length(...));
-    $factoryTransform = Transform::factory(format_number(...));
-    assertType('string', $format->transform(1));
-    assertType('string', $factoryTransform->transform(1));
-    assertType('int', ($format |> $length)->transform(1));
 
     $first = first();
     assertType('int|null', $numbers |> $first);
@@ -375,7 +366,7 @@ function pipeline_results(array $numbers, iterable $objectKeys, array $stringKey
     assertType('iterable<string, int>', $stringKeys |> $distinct);
     assertType('iterable<int<0, max>, int>', $numbers |> $distinct);
 
-    assertType('iterable<string, string>', $stringKeys |> mapping($format->transform(...)));
+    assertType('iterable<string, string>', $stringKeys |> mapping(format_number(...)));
 
     $observed = each(static function (int $value, string $key): void {});
     assertType('iterable<string, int>', $stringKeys |> $observed);
@@ -386,44 +377,6 @@ function pipeline_results(array $numbers, iterable $objectKeys, array $stringKey
     $observesAnyInput = each(static function (mixed $value, mixed $key): void {});
     assertType('iterable<string, int>', $stringKeys |> $observesAnyInput);
     assertType('iterable<int<0, max>, int>', $numbers |> $observesAnyInput);
-}
-
-function transformation_defaults(int $integerFallback, string $textFallback, ?int $nullableInteger): void
-{
-    $positive = then(static fn(int $value): bool => $value > 0);
-    assertType('int|null', $positive->transform(1));
-    assertType('int', defaults($integerFallback)->transform(null));
-    assertType('string', defaultsOr(created_text(...))->transform(null));
-
-    $fixedDefault = defaults($textFallback);
-    $factoryDefault = defaultsOr(created_text(...));
-    assertType('int|string', $fixedDefault->transform($nullableInteger));
-    assertType('int|string', $factoryDefault->transform($nullableInteger));
-    assertType('string', ($fixedDefault |> $factoryDefault)->transform(null));
-    $nestedDefault = defaults($fixedDefault);
-    assertType('int|string', $nestedDefault->transform(null)->transform($nullableInteger));
-
-    $nullableNumber = map(nullable_length(...));
-    assertType('int|string', ($nullableNumber |> $fixedDefault)->transform('value'));
-    assertType('int|string', ($nullableNumber |> $factoryDefault)->transform('value'));
-    assertType('int', ($positive |> defaults(0))->transform(1));
-    assertType('int', ($positive |> defaultsOr(static fn(): int => 0))->transform(1));
-
-    $format = map(format_number(...));
-    assertType('string|null', ($format |> then(static fn(string $value): bool => $value !== ''))->transform(1));
-    assertType(
-        'string',
-        ($format |> then(static fn(string $value): bool => $value !== '') |> defaults('missing'))->transform(1),
-    );
-
-    $nullableDefaultValues = $nullableNumber |> $fixedDefault |> values()->apply();
-    $nullableFactoryValues = $nullableNumber |> $factoryDefault |> values()->apply();
-    $selectedValues = $positive |> values()->apply();
-    $selectedDefaultValues = $positive |> defaults(0) |> values()->apply();
-    assertType('list<int|string>', ['one', ''] |> $nullableDefaultValues);
-    assertType('list<int|string>', ['one', ''] |> $nullableFactoryValues);
-    assertType('list<int|null>', [1, 0] |> $selectedValues);
-    assertType('list<int>', [1, 0] |> $selectedDefaultValues);
 }
 
 /**
@@ -502,19 +455,6 @@ function terminal_adapter_results(
     $thirdPartyTerminal = new StringLengthAdapter() |> $opaqueTerminal->apply();
     assertType('Nagare\\Terminal<object, string, string>', $thirdPartyTerminal);
     assertType('string', $objectKeyedStrings |> $thirdPartyTerminal);
-}
-
-/**
- * @template TInput
- * @param TInput $value
- * @param Transform<mixed, TInput> $unrelated
- */
-function unrelated_default_template(mixed $value, Transform $unrelated): void
-{
-    assertType(
-        'TInput (function Nagare\\Tests\\PHPStan\\Fixtures\\unrelated_default_template(), argument)',
-        $unrelated->transform('input'),
-    );
 }
 
 /**
