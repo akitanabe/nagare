@@ -9,11 +9,11 @@ use Nagare\Tests\CompleteAfterFirstExecution;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
+use function Nagare\Adapter\map;
 use function Nagare\Aggregation\fold;
 use function Nagare\Aggregation\pivot;
 use function Nagare\Materialization\values;
 use function Nagare\Query\first;
-use function Nagare\Transformation\map;
 
 final class PivotTest extends TestCase
 {
@@ -29,7 +29,7 @@ final class PivotTest extends TestCase
         self::assertSame([], $sourceLog);
     }
 
-    public function testPlanPivotAppliesEachTransformToValuesFromOneInput(): void
+    public function testPivotAppliesEachAdapterToValuesFromOneInput(): void
     {
         $terminal = pivot(
             a: map(static fn(int $value): int => $value + 1)

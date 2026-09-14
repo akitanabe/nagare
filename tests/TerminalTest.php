@@ -10,8 +10,8 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use TypeError;
 
+use function Nagare\Adapter\map;
 use function Nagare\Materialization\values;
-use function Nagare\Transformation\map;
 
 final class TerminalTest extends TestCase
 {
@@ -45,12 +45,12 @@ final class TerminalTest extends TestCase
     public function testTerminalInvocationAcceptsOnlyIterableExecutionInput(): void
     {
         $terminal = values();
-        $transform = map(static fn(int $value): int => $value + 1);
+        $adapter = map(static fn(int $value): int => $value + 1);
 
         $this->expectException(TypeError::class);
 
-        /** @phpstan-ignore argument.type, argument.templateType (The runtime contract intentionally rejects transforms as terminal input.) */
-        $terminal($transform);
+        /** @phpstan-ignore argument.type, argument.templateType (The runtime contract intentionally rejects adapters as terminal input.) */
+        $terminal($adapter);
     }
 
     public function testTerminalPassesKeysOfAnyTypeAndValuesInInputOrder(): void

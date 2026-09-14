@@ -10,7 +10,9 @@ use Nagare\Tests\TerminalAdapter\StringLengthAdapter;
 
 use function Nagare\Adapter\filter as adapterFilter;
 use function Nagare\Adapter\filterMap as adapterFilterMap;
+use function Nagare\Adapter\map;
 use function Nagare\Adapter\map as adapterMap;
+use function Nagare\Adapter\then;
 use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\fold;
 use function Nagare\Aggregation\join;
@@ -28,8 +30,6 @@ use function Nagare\Query\any;
 use function Nagare\Query\find;
 use function Nagare\Query\first;
 use function Nagare\Query\none;
-use function Nagare\Transformation\map;
-use function Nagare\Transformation\then;
 
 /**
  * @param list<int> $numbers
@@ -40,17 +40,19 @@ function incompatible_inputs(array $numbers, array $strings, iterable $objectKey
 {
     $format = map(format_number(...));
     $length = map(text_length(...));
-    // @phpstan-ignore argument.type (A string cannot be given to an integer transformation.)
-    $format->transform('invalid');
-    // @phpstan-ignore argument.type (The next transformation cannot accept the previous output.)
+    $formattedValues = $format |> values()->apply();
+    // @phpstan-ignore argument.type (A string cannot be given to an integer adapter.)
+    ['invalid'] |> $formattedValues;
+    // @phpstan-ignore argument.type (The next adapter cannot accept the previous output.)
     $format |> $format;
 
     $positive = then(static fn(int $value): bool => $value > 0);
-    // @phpstan-ignore argument.type (A string cannot be given to an integer predicate transformation.)
-    $positive->transform('invalid');
+    $positiveValues = $positive |> values()->apply();
+    // @phpstan-ignore argument.type (A string cannot be given to an integer predicate adapter.)
+    ['invalid'] |> $positiveValues;
 
     $terminal = $length |> first()->apply();
-    // @phpstan-ignore argument.type (The terminal requires string input after applying this transformation.)
+    // @phpstan-ignore argument.type (The terminal requires string input after applying this adapter.)
     $numbers |> $terminal;
     // @phpstan-ignore argument.type (Lazy mapping must reject incompatible source elements.)
     $strings |> mapping(format_number(...));
@@ -70,7 +72,7 @@ function incompatible_inputs(array $numbers, array $strings, iterable $objectKey
     $sum = fold(0, static fn(int $sum, int $value): int => $sum + $value);
     // @phpstan-ignore argument.type (The reducer accepts integers only.)
     $strings |> $sum;
-    // @phpstan-ignore argument.type (The transformed output must satisfy the reducer input.)
+    // @phpstan-ignore argument.type (The adapted output must satisfy the reducer input.)
     $format |> $sum->apply();
 
     $integerSum = sum();
@@ -199,6 +201,6 @@ function incompatible_definition_alternatives(bool $chooseStrings): void
     $strings = fold('', static fn(string $state, string $value): string => $state . $value);
     $numbers = fold(0, static fn(int $state, int $value): int => $state + $value);
     $terminal = $chooseStrings ? $strings : $numbers;
-    // @phpstan-ignore argument.type (The transformed value must be accepted by every possible terminal definition.)
+    // @phpstan-ignore argument.type (The adapted value must be accepted by every possible terminal definition.)
     map(format_number(...)) |> $terminal->apply();
 }

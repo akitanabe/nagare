@@ -11,7 +11,6 @@ includes:
 The type implementation is verified with PHPStan 2.2.13. PHPStan is a development
 dependency; terminal execution does not load or invoke the extension.
 
-`Transform<TInput, TOutput>` describes a single-value transformation.
 `TerminalAdapter<TInput, TOutput>` describes terminal-local input and output,
 and `Adapter\Definition<TInput, TOutput>` is Nagare's built-in implementation.
 `Terminal<TKey, TValue, TResult>` and `TerminalExecution<TKey, TValue, TResult>`
@@ -122,10 +121,6 @@ Explicitly widening a definition to `Terminal<mixed, mixed, mixed>` discards its
 result relationship. Likewise, a callback accepting or returning `mixed` cannot
 provide a more specific contract just from a later pipeline connection. Declare
 callback input types when their accepted values matter.
-
-The existing `Nagare\Transformation` API remains available. `Transform` also
-implements `TerminalAdapter`, so its established composition and `transform()`
-type inference continue to work with the generalized terminal connection.
 
 `composer test` runs the public result assertions through PHPStan's
 `TypeInferenceTestCase`, alongside the runtime tests. `composer analyse` also
