@@ -80,6 +80,16 @@ function some(): Definition
 }
 
 /**
+ * Forward only null values.
+ *
+ * @return Definition<mixed, mixed>
+ */
+function none(): Definition
+{
+    return Definition::filtering(static fn(mixed $value): bool => $value === null);
+}
+
+/**
  * Map each input once and forward only non-null outputs.
  *
  * @template TInput

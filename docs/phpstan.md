@@ -64,7 +64,7 @@ $lengths = filterMap(static fn(string $value): ?int => $value === '' ? null : st
 // $lengths is Terminal<mixed, string, list<int<1, max>>>
 ```
 
-The seven built-in factories preserve these relationships:
+The eight built-in factories preserve these relationships:
 
 | Factory | Inferred definition |
 | --- | --- |
@@ -74,6 +74,7 @@ The seven built-in factories preserve these relationships:
 | `fallbackWith(callable(): TFallback)` | `Definition<TValue\|null, TValue\|TFallback>` at each input connection |
 | `filter(callable(TValue): bool)` | `Definition<TValue, TValue>` |
 | `some()` | `Definition<TValue\|null, TValue>` at each input connection |
+| `none()` | `Definition<TValue\|null, null>` at each input connection |
 | `filterMap(callable(TInput): TOutput\|null)` | `Definition<TInput, TOutput>` with `null` removed from the output |
 
 The input-dependent factories can be saved and reused. For example, one

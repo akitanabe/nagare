@@ -14,6 +14,7 @@ use function Nagare\Adapter\filter as adapterFilter;
 use function Nagare\Adapter\filterMap as adapterFilterMap;
 use function Nagare\Adapter\map;
 use function Nagare\Adapter\map as adapterMap;
+use function Nagare\Adapter\none as adapterNone;
 use function Nagare\Adapter\some as adapterSome;
 use function Nagare\Adapter\then as adapterThen;
 use function Nagare\Aggregation\average;
@@ -51,7 +52,6 @@ use function Nagare\Query\find;
 use function Nagare\Query\first;
 use function Nagare\Query\isEmpty;
 use function Nagare\Query\last;
-use function Nagare\Query\none;
 use function PHPStan\Testing\assertType;
 
 function format_number(int $value): string
@@ -208,12 +208,10 @@ function materialization_and_aggregation_results(
 
     $hasPositive = any(static fn(int $value): bool => $value > 0);
     $allPositive = all(static fn(int $value): bool => $value > 0);
-    $hasNoNegative = none(static fn(int $value): bool => $value < 0);
     $allNonEmpty = all(static fn(string $value): bool => $value !== '');
     assertType('bool', $numbers |> $hasPositive);
     assertType('bool', $numbers |> $allPositive);
     assertType('bool', $strings |> $allNonEmpty);
-    assertType('bool', [] |> $hasNoNegative);
 
     $empty = isEmpty();
     $containsOne = contains(1);
@@ -406,11 +404,13 @@ function terminal_adapter_results(
     $positiveOrNullValues = $positiveOrNull |> values()->apply();
     $positiveValues = $positive |> values()->apply();
     $presentValues = adapterSome() |> values()->apply();
+    $absentValues = adapterNone() |> values()->apply();
     $parsedValues = $parsed |> values()->apply();
     assertType('list<string>', $numbers |> $formattedValues);
     assertType('list<int|null>', $numbers |> $positiveOrNullValues);
     assertType('list<int>', $numbers |> $positiveValues);
     assertType('list<string>', $nullableStrings |> $presentValues);
+    assertType('list<null>', $nullableStrings |> $absentValues);
     assertType('list<int<1, max>>', $strings |> $parsedValues);
 
     $fixedDefault = adapterFallback('missing');

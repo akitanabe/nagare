@@ -9,7 +9,6 @@ use RuntimeException;
 
 use function Nagare\Query\all;
 use function Nagare\Query\any;
-use function Nagare\Query\none;
 
 final class PredicateQueryTest extends TestCase
 {
@@ -33,16 +32,6 @@ final class PredicateQueryTest extends TestCase
         self::assertFalse(all(static fn(int $value): bool => $value < 0)($source()));
     }
 
-    public function testNoneReturnsFalseAtTheFirstMatchingValueAndStopsReadingInput(): void
-    {
-        $source = static function (): iterable {
-            yield 'first' => 1;
-            throw new RuntimeException('second element was requested');
-        };
-
-        self::assertFalse(none(static fn(int $value): bool => $value === 1)($source()));
-    }
-
     public function testAllEvaluatesValuesInInputOrderUntilTheFirstNonMatch(): void
     {
         $received = [];
@@ -61,7 +50,6 @@ final class PredicateQueryTest extends TestCase
         $input = [1, 2, 3];
         $anyReceived = [];
         $allReceived = [];
-        $noneReceived = [];
         $anyPredicate = static function (int $value) use (&$anyReceived): bool {
             $anyReceived[] = $value;
 
@@ -72,39 +60,28 @@ final class PredicateQueryTest extends TestCase
 
             return true;
         };
-        $nonePredicate = static function (int $value) use (&$noneReceived): bool {
-            $noneReceived[] = $value;
-
-            return false;
-        };
 
         self::assertFalse(any($anyPredicate)($input));
         self::assertTrue(all($allPredicate)($input));
-        self::assertTrue(none($nonePredicate)($input));
         self::assertSame($input, $anyReceived);
         self::assertSame($input, $allReceived);
-        self::assertSame($input, $noneReceived);
     }
 
-    public function testAnyReturnsFalseAllReturnsTrueAndNoneReturnsTrueForEmptyInput(): void
+    public function testAnyReturnsFalseAndAllReturnsTrueForEmptyInput(): void
     {
         self::assertFalse(any(static fn(int $value): bool => $value > 0)([]));
         self::assertTrue(all(static fn(int $value): bool => $value > 0)([]));
-        self::assertTrue(none(static fn(int $value): bool => $value > 0)([]));
     }
 
     public function testPredicateTerminalsCanBeReusedForIndependentInputs(): void
     {
         $any = any(static fn(int $value): bool => $value > 0);
         $all = all(static fn(int $value): bool => $value > 0);
-        $none = none(static fn(int $value): bool => $value > 0);
 
         self::assertTrue($any([1]));
         self::assertFalse($any([]));
         self::assertFalse($all([0]));
         self::assertTrue($all([]));
-        self::assertFalse($none([1]));
-        self::assertTrue($none([]));
     }
 
     public function testPredicateExceptionsPropagateWithTheirOriginalIdentity(): void

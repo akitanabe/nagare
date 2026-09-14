@@ -30,6 +30,7 @@ final class AdapterReturnTypeExtension implements DynamicFunctionReturnTypeExten
                 'Nagare\\Adapter\\fallback',
                 'Nagare\\Adapter\\fallbackWith',
                 'Nagare\\Adapter\\some',
+                'Nagare\\Adapter\\none',
             ],
             strict: true,
         );
@@ -56,15 +57,20 @@ final class AdapterReturnTypeExtension implements DynamicFunctionReturnTypeExten
             ]);
         }
 
-        if ($name === 'Nagare\\Adapter\\some') {
+        if (in_array($name, ['Nagare\\Adapter\\some', 'Nagare\\Adapter\\none'], strict: true)) {
             $input = $this->defaultType->fixedInput();
             if ($input === null) {
                 return null;
             }
 
+            $outputTypes = [
+                'Nagare\\Adapter\\some' => $input,
+                'Nagare\\Adapter\\none' => new NullType(),
+            ];
+
             return new GenericObjectType(Definition::class, [
                 TypeCombinator::union($input, new NullType()),
-                $input,
+                $outputTypes[$name],
             ]);
         }
 

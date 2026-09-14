@@ -111,22 +111,3 @@ function all(callable $predicate): Terminal
         resultWhenComplete: false,
     ));
 }
-
-/**
- * Create a terminal that returns true when no input value matches the predicate.
- * Returns true for empty input.
- *
- * @template TValue
- * @param callable(TValue): bool $predicate
- * @param-later-invoked-callable $predicate
- * @return Terminal<mixed, TValue, bool>
- */
-function none(callable $predicate): Terminal
-{
-    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
-        predicate: $predicate,
-        result: true,
-        completeWhen: true,
-        resultWhenComplete: false,
-    ));
-}
