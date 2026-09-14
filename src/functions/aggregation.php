@@ -134,6 +134,11 @@ function join(string $separator): Terminal
  * in declaration order. Input is consumed once and stops when all terminals are
  * complete.
  *
+ * Prefer pivot() for composing independent terminals. For performance-sensitive
+ * aggregations that consume all input, consider fold() with a single callback
+ * that updates all accumulators. Measure the complete workload: I/O and per-item
+ * processing may outweigh the aggregation overhead.
+ *
  * @param Terminal<never, never, mixed> ...$terminals
  * @return Terminal<never, never, array<int|string, mixed>>
  * @throws InvalidArgumentException If positional and named arguments are mixed.
