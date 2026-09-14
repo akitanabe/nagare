@@ -13,13 +13,13 @@ use RuntimeException;
 use function Nagare\Adapter\filter;
 use function Nagare\Adapter\filterMap;
 use function Nagare\Adapter\map;
-use function Nagare\Aggregation\count;
-use function Nagare\Aggregation\pivot;
-use function Nagare\Materialization\associate;
-use function Nagare\Materialization\entries;
-use function Nagare\Materialization\keys;
-use function Nagare\Materialization\values;
-use function Nagare\Query\first;
+use function Nagare\Terminal\Aggregation\count;
+use function Nagare\Terminal\Aggregation\pivot;
+use function Nagare\Terminal\Materialization\associate;
+use function Nagare\Terminal\Materialization\entries;
+use function Nagare\Terminal\Materialization\keys;
+use function Nagare\Terminal\Materialization\values;
+use function Nagare\Terminal\Query\first;
 
 final class TerminalIntegrationTest extends TestCase
 {

@@ -2,44 +2,41 @@
 
 declare(strict_types=1);
 
-namespace Nagare\Query;
+namespace Nagare\Terminal\Query;
 
 use Nagare\TerminalExecution;
 
 /**
  * @internal
  * @template TValue
- * @implements TerminalExecution<mixed, TValue, bool>
+ * @implements TerminalExecution<mixed, TValue, TValue|null>
  */
-final class PredicateExecution implements TerminalExecution
+final class FindExecution implements TerminalExecution
 {
     /** @var \Closure(TValue): bool */
     private \Closure $predicate;
 
     private bool $complete = false;
 
+    /** @var TValue|null */
+    private mixed $value = null;
+
     /**
      * @param callable(TValue): bool $predicate
      */
-    public function __construct(
-        callable $predicate,
-        private bool $result,
-        private bool $completeWhen,
-        private bool $resultWhenComplete,
-    ) {
+    public function __construct(callable $predicate)
+    {
         $this->predicate = $predicate(...);
     }
 
     public function accept(mixed $value, mixed $key): void
     {
-        if ($this->complete) {
+        if ($this->complete || !($this->predicate)($value)) {
             return;
         }
 
-        if (($this->predicate)($value) === $this->completeWhen) {
-            $this->result = $this->resultWhenComplete;
-            $this->complete = true;
-        }
+        $this->value = $value;
+        $this->complete = true;
     }
 
     public function isComplete(): bool
@@ -49,6 +46,6 @@ final class PredicateExecution implements TerminalExecution
 
     public function finish(): mixed
     {
-        return $this->result;
+        return $this->value;
     }
 }

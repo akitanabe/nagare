@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Nagare\Aggregation;
+namespace Nagare\Terminal\Aggregation;
 
 use Nagare\Terminal;
 use Nagare\TerminalExecution;

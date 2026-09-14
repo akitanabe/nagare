@@ -7,7 +7,7 @@ namespace Nagare\Tests\Materialization;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Materialization\values;
+use function Nagare\Terminal\Materialization\values;
 
 final class ValuesTest extends TestCase
 {

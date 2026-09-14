@@ -7,10 +7,10 @@ namespace Nagare\Tests\Aggregation;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Aggregation\max;
-use function Nagare\Aggregation\maxBy;
-use function Nagare\Aggregation\min;
-use function Nagare\Aggregation\minBy;
+use function Nagare\Terminal\Aggregation\max;
+use function Nagare\Terminal\Aggregation\maxBy;
+use function Nagare\Terminal\Aggregation\min;
+use function Nagare\Terminal\Aggregation\minBy;
 
 final class ExtremeTest extends TestCase
 {

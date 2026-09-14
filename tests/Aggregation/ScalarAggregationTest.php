@@ -6,10 +6,10 @@ namespace Nagare\Tests\Aggregation;
 
 use PHPUnit\Framework\TestCase;
 
-use function Nagare\Aggregation\average;
-use function Nagare\Aggregation\count;
-use function Nagare\Aggregation\join;
-use function Nagare\Aggregation\sum;
+use function Nagare\Terminal\Aggregation\average;
+use function Nagare\Terminal\Aggregation\count;
+use function Nagare\Terminal\Aggregation\join;
+use function Nagare\Terminal\Aggregation\sum;
 
 final class ScalarAggregationTest extends TestCase
 {

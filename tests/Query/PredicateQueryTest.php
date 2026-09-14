@@ -7,8 +7,8 @@ namespace Nagare\Tests\Query;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Query\all;
-use function Nagare\Query\any;
+use function Nagare\Terminal\Query\all;
+use function Nagare\Terminal\Query\any;
 
 final class PredicateQueryTest extends TestCase
 {

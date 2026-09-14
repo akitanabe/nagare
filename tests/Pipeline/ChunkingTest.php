@@ -11,7 +11,7 @@ use stdClass;
 use WeakReference;
 
 use function Nagare\Pipeline\chunking;
-use function Nagare\Query\first;
+use function Nagare\Terminal\Query\first;
 
 final class ChunkingTest extends TestCase
 {

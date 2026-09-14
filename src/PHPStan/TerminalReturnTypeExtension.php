@@ -38,16 +38,16 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
         return in_array(
             $functionReflection->getName(),
             [
-                'Nagare\\Query\\first',
-                'Nagare\\Query\\last',
-                'Nagare\\Query\\find',
-                'Nagare\\Aggregation\\min',
-                'Nagare\\Aggregation\\max',
-                'Nagare\\Aggregation\\minBy',
-                'Nagare\\Aggregation\\maxBy',
-                'Nagare\\Aggregation\\unique',
-                'Nagare\\Materialization\\values',
-                'Nagare\\Aggregation\\pivot',
+                'Nagare\\Terminal\\Query\\first',
+                'Nagare\\Terminal\\Query\\last',
+                'Nagare\\Terminal\\Query\\find',
+                'Nagare\\Terminal\\Aggregation\\min',
+                'Nagare\\Terminal\\Aggregation\\max',
+                'Nagare\\Terminal\\Aggregation\\minBy',
+                'Nagare\\Terminal\\Aggregation\\maxBy',
+                'Nagare\\Terminal\\Aggregation\\unique',
+                'Nagare\\Terminal\\Materialization\\values',
+                'Nagare\\Terminal\\Aggregation\\pivot',
             ],
             strict: true,
         );
@@ -58,13 +58,13 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
         FuncCall $functionCall,
         Scope $scope,
     ): ?Type {
-        if ($functionReflection->getName() === 'Nagare\\Aggregation\\pivot') {
+        if ($functionReflection->getName() === 'Nagare\\Terminal\\Aggregation\\pivot') {
             return $this->pivotedType($functionCall, $scope);
         }
 
         if (in_array(
             $functionReflection->getName(),
-            ['Nagare\\Aggregation\\unique', 'Nagare\\Materialization\\values'],
+            ['Nagare\\Terminal\\Aggregation\\unique', 'Nagare\\Terminal\\Materialization\\values'],
             strict: true,
         )) {
             return $this->inputDependentTerminal(
@@ -79,9 +79,9 @@ final class TerminalReturnTypeExtension implements DynamicFunctionReturnTypeExte
         $input = in_array(
             $functionReflection->getName(),
             [
-                'Nagare\\Query\\find',
-                'Nagare\\Aggregation\\minBy',
-                'Nagare\\Aggregation\\maxBy',
+                'Nagare\\Terminal\\Query\\find',
+                'Nagare\\Terminal\\Aggregation\\minBy',
+                'Nagare\\Terminal\\Aggregation\\maxBy',
             ],
             strict: true,
         )

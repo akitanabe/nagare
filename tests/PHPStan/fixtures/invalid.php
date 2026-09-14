@@ -13,22 +13,22 @@ use function Nagare\Adapter\filterMap as adapterFilterMap;
 use function Nagare\Adapter\map;
 use function Nagare\Adapter\map as adapterMap;
 use function Nagare\Adapter\then;
-use function Nagare\Aggregation\average;
-use function Nagare\Aggregation\fold;
-use function Nagare\Aggregation\join;
-use function Nagare\Aggregation\maxBy;
-use function Nagare\Aggregation\minBy;
-use function Nagare\Aggregation\pivot;
-use function Nagare\Aggregation\sum;
-use function Nagare\Materialization\associate;
-use function Nagare\Materialization\values;
 use function Nagare\Pipeline\chunking;
 use function Nagare\Pipeline\each;
 use function Nagare\Pipeline\mapping;
-use function Nagare\Query\all;
-use function Nagare\Query\any;
-use function Nagare\Query\find;
-use function Nagare\Query\first;
+use function Nagare\Terminal\Aggregation\average;
+use function Nagare\Terminal\Aggregation\fold;
+use function Nagare\Terminal\Aggregation\join;
+use function Nagare\Terminal\Aggregation\maxBy;
+use function Nagare\Terminal\Aggregation\minBy;
+use function Nagare\Terminal\Aggregation\pivot;
+use function Nagare\Terminal\Aggregation\sum;
+use function Nagare\Terminal\Materialization\associate;
+use function Nagare\Terminal\Materialization\values;
+use function Nagare\Terminal\Query\all;
+use function Nagare\Terminal\Query\any;
+use function Nagare\Terminal\Query\find;
+use function Nagare\Terminal\Query\first;
 
 /**
  * @param list<int> $numbers

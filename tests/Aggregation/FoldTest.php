@@ -7,7 +7,7 @@ namespace Nagare\Tests\Aggregation;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Aggregation\fold;
+use function Nagare\Terminal\Aggregation\fold;
 
 final class FoldTest extends TestCase
 {

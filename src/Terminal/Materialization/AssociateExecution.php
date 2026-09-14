@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Nagare\Materialization;
+namespace Nagare\Terminal\Materialization;
 
 use Closure;
 use Nagare\TerminalExecution;

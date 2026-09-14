@@ -7,9 +7,9 @@ namespace Nagare\Tests\Aggregation;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Aggregation\fold;
-use function Nagare\Aggregation\pivot;
-use function Nagare\Materialization\values;
+use function Nagare\Terminal\Aggregation\fold;
+use function Nagare\Terminal\Aggregation\pivot;
+use function Nagare\Terminal\Materialization\values;
 
 final class PivotReuseTest extends TestCase
 {

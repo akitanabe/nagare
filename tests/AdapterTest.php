@@ -16,9 +16,9 @@ use function Nagare\Adapter\map;
 use function Nagare\Adapter\none;
 use function Nagare\Adapter\some;
 use function Nagare\Adapter\then;
-use function Nagare\Materialization\entries;
-use function Nagare\Materialization\keys;
-use function Nagare\Materialization\values;
+use function Nagare\Terminal\Materialization\entries;
+use function Nagare\Terminal\Materialization\keys;
+use function Nagare\Terminal\Materialization\values;
 
 final class AdapterTest extends TestCase
 {

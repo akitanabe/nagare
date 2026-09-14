@@ -14,10 +14,10 @@
   "autoload": {
     "files": [
       "src/functions/adapter.php",
-      "src/functions/aggregation.php",
-      "src/functions/materialization.php",
+      "src/functions/terminal/aggregation.php",
+      "src/functions/terminal/materialization.php",
       "src/functions/pipeline.php",
-      "src/functions/query.php"
+      "src/functions/terminal/query.php"
     ],
     "psr-4": {
       "Nagare\\": "src/"

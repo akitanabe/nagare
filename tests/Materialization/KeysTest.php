@@ -6,7 +6,7 @@ namespace Nagare\Tests\Materialization;
 
 use PHPUnit\Framework\TestCase;
 
-use function Nagare\Materialization\keys;
+use function Nagare\Terminal\Materialization\keys;
 
 final class KeysTest extends TestCase
 {

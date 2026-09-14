@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Nagare\Query;
+namespace Nagare\Terminal\Query;
 
 use Nagare\Terminal;
 use Nagare\TerminalExecution;

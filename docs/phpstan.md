@@ -49,9 +49,9 @@ namespace App;
 
 use function Nagare\Adapter\filterMap;
 use function Nagare\Adapter\map;
-use function Nagare\Aggregation\pivot;
-use function Nagare\Materialization\values;
-use function Nagare\Query\first;
+use function Nagare\Terminal\Aggregation\pivot;
+use function Nagare\Terminal\Materialization\values;
+use function Nagare\Terminal\Query\first;
 
 $format = map(static fn(int $value): string => (string) $value);
 $formatted = $format |> values()->apply();
