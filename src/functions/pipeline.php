@@ -25,6 +25,25 @@ function mapping(callable $mapper): Closure
 }
 
 /**
+ * Lazily invoke a callback for each input key and value while preserving both in the output.
+ *
+ * @template TCallbackKey
+ * @template TValue
+ * @param callable(TValue, TCallbackKey): void $callback
+ * @param-later-invoked-callable $callback
+ * @return Closure<TKey>(iterable<TKey, TValue>): iterable<TKey, TValue>
+ */
+function each(callable $callback): Closure
+{
+    return static function (iterable $input) use ($callback): iterable {
+        foreach ($input as $key => $value) {
+            $callback($value, $key);
+            yield $key => $value;
+        }
+    };
+}
+
+/**
  * Lazily yield each mapped iterable's keys and values in order, discarding the outer input keys.
  *
  * @template TInput

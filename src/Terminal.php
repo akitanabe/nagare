@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nagare;
 
 use Closure;
+use Nagare\Terminal\HookExecution;
 use Nagare\Transformation\TransformExecution;
 
 /**
@@ -86,6 +87,18 @@ final class Terminal
     private function applyTransform(Transform $transform): self
     {
         return self::factory(fn(): TerminalExecution => new TransformExecution($this->execution(), $transform));
+    }
+
+    /**
+     * Observe each value and key received by this terminal before forwarding them to the underlying execution.
+     *
+     * @param-later-invoked-callable $callback
+     * @param callable(TValue, TKey): void $callback
+     * @return self<TKey, TValue, TResult>
+     */
+    public function hook(callable $callback): self // @phpstan-ignore generics.variance, generics.variance (The hook callback consumes the terminal's contravariant input types.)
+    {
+        return self::factory(fn(): TerminalExecution => new HookExecution($this->execution(), $callback));
     }
 
     /**

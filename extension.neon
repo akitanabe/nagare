@@ -14,7 +14,15 @@ services:
         tags:
             - phpstan.broker.dynamicFunctionReturnTypeExtension
     -
+        class: Nagare\PHPStan\PipelineEachReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicFunctionReturnTypeExtension
+    -
         class: Nagare\PHPStan\TerminalApplyReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
+    -
+        class: Nagare\PHPStan\TerminalHookReturnTypeExtension
         tags:
             - phpstan.broker.dynamicMethodReturnTypeExtension
     -
