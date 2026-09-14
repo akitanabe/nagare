@@ -6,7 +6,6 @@ namespace Nagare;
 
 use Closure;
 use Nagare\Terminal\HookExecution;
-use Nagare\Transformation\TransformExecution;
 
 /**
  * A reusable terminal definition.
@@ -70,23 +69,23 @@ final class Terminal
     }
 
     /**
-     * Attach a single-value transformation to this terminal definition.
+     * Attach a value adapter to this terminal definition.
      *
-     * @return Closure<TSource>(Transform<TSource, TValue>): Terminal<TKey, TSource, TResult>
+     * @return Closure<TSource>(TerminalAdapter<TSource, TValue>): Terminal<TKey, TSource, TResult>
      */
     public function apply(): Closure
     {
-        return $this->applyTransform(...);
+        return $this->applyAdapter(...);
     }
 
     /**
      * @template TSource
-     * @param Transform<TSource, TValue> $transform
+     * @param TerminalAdapter<TSource, TValue> $adapter
      * @return Terminal<TKey, TSource, TResult>
      */
-    private function applyTransform(Transform $transform): self
+    private function applyAdapter(TerminalAdapter $adapter): self
     {
-        return self::factory(fn(): TerminalExecution => new TransformExecution($this->execution(), $transform));
+        return self::factory(fn(): TerminalExecution => $adapter->apply($this->execution()));
     }
 
     /**

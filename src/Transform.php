@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nagare;
 
 use Closure;
+use Nagare\Transformation\TransformExecution;
 
 /**
  * A reusable single-value transformation.
@@ -14,8 +15,9 @@ use Closure;
  *
  * @template-contravariant TInput
  * @template-covariant TOutput
+ * @implements TerminalAdapter<TInput, TOutput>
  */
-final class Transform
+final class Transform implements TerminalAdapter
 {
     /** @var Closure(TInput): TOutput */
     private readonly Closure $transform;
@@ -56,6 +58,17 @@ final class Transform
     public function transform(mixed $value): mixed
     {
         return ($this->transform)($value);
+    }
+
+    /**
+     * @template TKey
+     * @template TResult
+     * @param TerminalExecution<TKey, TOutput, TResult> $execution
+     * @return TerminalExecution<TKey, TInput, TResult>
+     */
+    public function apply(TerminalExecution $execution): TerminalExecution
+    {
+        return new TransformExecution($execution, $this);
     }
 
     /**
