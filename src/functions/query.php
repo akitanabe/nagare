@@ -41,6 +41,40 @@ function find(callable $predicate): Terminal
 }
 
 /**
+ * Create a terminal that returns true when the input is empty.
+ * Returns false after observing the first input value.
+ *
+ * @return Terminal<mixed, mixed, bool>
+ */
+function isEmpty(): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
+        predicate: static fn(mixed $_value): bool => true,
+        result: true,
+        completeWhen: true,
+        resultWhenComplete: false,
+    ));
+}
+
+/**
+ * Create a terminal that returns true when the input contains the target value.
+ * Uses strict comparison (`===`); objects match only when they are the same instance.
+ * Returns false when no input value matches or the input is empty.
+ *
+ * @param mixed $value
+ * @return Terminal<mixed, mixed, bool>
+ */
+function contains(mixed $value): Terminal
+{
+    return Terminal::factory(static fn(): TerminalExecution => new PredicateExecution(
+        predicate: static fn(mixed $candidate): bool => $candidate === $value,
+        result: false,
+        completeWhen: true,
+        resultWhenComplete: true,
+    ));
+}
+
+/**
  * Create a terminal that returns true when any input value matches the predicate.
  * Returns false for empty input.
  *

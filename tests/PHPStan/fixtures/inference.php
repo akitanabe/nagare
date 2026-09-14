@@ -10,7 +10,9 @@ use Nagare\Transform;
 
 use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\count;
+use function Nagare\Aggregation\countBy;
 use function Nagare\Aggregation\fold;
+use function Nagare\Aggregation\groupBy;
 use function Nagare\Aggregation\join;
 use function Nagare\Aggregation\max;
 use function Nagare\Aggregation\maxBy;
@@ -18,10 +20,14 @@ use function Nagare\Aggregation\min;
 use function Nagare\Aggregation\minBy;
 use function Nagare\Aggregation\pivot;
 use function Nagare\Aggregation\sum;
+use function Nagare\Aggregation\unique;
+use function Nagare\Aggregation\uniqueBy;
 use function Nagare\Materialization\associate;
 use function Nagare\Materialization\entries;
 use function Nagare\Materialization\keys;
 use function Nagare\Materialization\values;
+use function Nagare\Pipeline\chunking;
+use function Nagare\Pipeline\distinct;
 use function Nagare\Pipeline\dropping;
 use function Nagare\Pipeline\droppingWhile;
 use function Nagare\Pipeline\filtering;
@@ -31,8 +37,10 @@ use function Nagare\Pipeline\taking;
 use function Nagare\Pipeline\takingWhile;
 use function Nagare\Query\all;
 use function Nagare\Query\any;
+use function Nagare\Query\contains;
 use function Nagare\Query\find;
 use function Nagare\Query\first;
+use function Nagare\Query\isEmpty;
 use function Nagare\Query\last;
 use function Nagare\Query\none;
 use function Nagare\Transformation\defaults;
@@ -112,6 +120,15 @@ function transformation_and_query_results(array $numbers, array $strings, array 
     assertType('int|null', $numbers |> $found);
     assertType('int<1, max>|null', $positiveNumbers |> $found);
     assertType('null', [] |> $found);
+
+    $empty = isEmpty();
+    $containsOne = contains(1);
+    assertType('bool', $numbers |> $empty);
+    assertType('bool', $strings |> $empty);
+    assertType('bool', [] |> $empty);
+    assertType('bool', $numbers |> $containsOne);
+    assertType('bool', $strings |> $containsOne);
+    assertType('bool', [] |> $containsOne);
 
     $minimumBy = minBy(static fn(int $value): int => $value);
     $maximumBy = maxBy(static fn(int $value): int => $value);
@@ -193,6 +210,44 @@ function materialization_and_aggregation_results(
     assertType('bool', $numbers |> $allPositive);
     assertType('bool', $strings |> $allNonEmpty);
     assertType('bool', [] |> $hasNoNegative);
+
+    $empty = isEmpty();
+    $containsOne = contains(1);
+    assertType('bool', $objectKeys |> $empty);
+    assertType('bool', $objectKeys |> $containsOne);
+}
+
+/**
+ * @param list<int> $numbers
+ * @param list<string> $strings
+ */
+function collection_aggregation_results(array $numbers, array $strings): void
+{
+    $unique = unique();
+    $uniqueByParity = uniqueBy(static fn(int $value): int => $value % 2);
+    $countByParity = countBy(static fn(int $value): int => $value % 2);
+    $groupByParity = groupBy(static fn(int $value): int => $value % 2);
+    assertType('list<int>', $numbers |> $unique);
+    assertType('list<string>', $strings |> $unique);
+    assertType('list<int>', $numbers |> $uniqueByParity);
+    assertType('array<int, int>', $numbers |> $countByParity);
+    assertType('array<int, list<int>>', $numbers |> $groupByParity);
+    assertType(
+        'array{unique: list<int>, uniqueBy: list<int>, counts: array<int, int>, groups: array<int, list<int>>}',
+        $numbers |> pivot(unique: $unique, uniqueBy: $uniqueByParity, counts: $countByParity, groups: $groupByParity),
+    );
+
+    $uniqueStringsByLength = uniqueBy(text_length(...));
+    $countStringsByLength = countBy(text_length(...));
+    $groupStringsByLength = groupBy(text_length(...));
+    assertType('list<string>', $strings |> $uniqueStringsByLength);
+    assertType('array<int, int>', $strings |> $countStringsByLength);
+    assertType('array<int, list<string>>', $strings |> $groupStringsByLength);
+    assertType(
+        'array{uniqueBy: list<string>, counts: array<int, int>, groups: array<int, list<string>>}',
+        $strings
+            |> pivot(uniqueBy: $uniqueStringsByLength, counts: $countStringsByLength, groups: $groupStringsByLength),
+    );
 }
 
 /**
@@ -245,7 +300,7 @@ function terminal_composition_results(array $numbers, array $strings, iterable $
  * @param iterable<object, int> $objectKeys
  * @param array<string, int> $stringKeys
  */
-function pipeline_results(array $numbers, iterable $objectKeys, array $stringKeys): void
+function pipeline_results(array $numbers, iterable $objectKeys, array $stringKeys, bool $preserveKeys): void
 {
     $format = map(format_number(...));
     $first = first();
@@ -283,6 +338,27 @@ function pipeline_results(array $numbers, iterable $objectKeys, array $stringKey
     assertType('iterable<object, int>', $objectKeys |> $droppedWhile);
     assertType('iterable<string, int>', $stringKeys |> $droppedWhile);
     assertType('iterable<int<0, max>, int>', $numbers |> $droppedWhile);
+
+    $chunks = chunking(2);
+    assertType('iterable<int, array<string, int>>', $stringKeys |> $chunks);
+    assertType('iterable<int, array<int<0, max>, int>>', $numbers |> $chunks);
+
+    $preservedChunks = chunking(2, preserveKeys: true);
+    assertType('iterable<int, array<string, int>>', $stringKeys |> $preservedChunks);
+    assertType('iterable<int, array<int<0, max>, int>>', $numbers |> $preservedChunks);
+
+    $valueChunks = chunking(2, preserveKeys: false);
+    assertType('iterable<int, list<int>>', $stringKeys |> $valueChunks);
+    assertType('iterable<int, list<int>>', $objectKeys |> $valueChunks);
+
+    $dynamicChunks = chunking(2, preserveKeys: $preserveKeys);
+    assertType('iterable<int, array<int<0, max>|string, int>>', $stringKeys |> $dynamicChunks);
+    assertType('iterable<int, array<int<0, max>, int>>', $numbers |> $dynamicChunks);
+
+    $distinct = distinct();
+    assertType('iterable<object, int>', $objectKeys |> $distinct);
+    assertType('iterable<string, int>', $stringKeys |> $distinct);
+    assertType('iterable<int<0, max>, int>', $numbers |> $distinct);
 
     assertType('iterable<string, string>', $stringKeys |> mapping($format->transform(...)));
 }
