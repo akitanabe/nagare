@@ -6,8 +6,16 @@ namespace Nagare\Tests\PHPStan\Fixtures;
 
 use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
+use Nagare\Tests\TerminalAdapter\StringLengthAdapter;
 use Nagare\Transform;
 
+use function Nagare\Adapter\defaults as adapterDefaults;
+use function Nagare\Adapter\defaultsOr as adapterDefaultsOr;
+use function Nagare\Adapter\filter as adapterFilter;
+use function Nagare\Adapter\filterMap as adapterFilterMap;
+use function Nagare\Adapter\map as adapterMap;
+use function Nagare\Adapter\some as adapterSome;
+use function Nagare\Adapter\then as adapterThen;
 use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\count;
 use function Nagare\Aggregation\countBy;
@@ -416,6 +424,84 @@ function transformation_defaults(int $integerFallback, string $textFallback, ?in
     assertType('list<int|string>', ['one', ''] |> $nullableFactoryValues);
     assertType('list<int|null>', [1, 0] |> $selectedValues);
     assertType('list<int>', [1, 0] |> $selectedDefaultValues);
+}
+
+/**
+ * @param list<int> $numbers
+ * @param list<string> $strings
+ * @param list<int|null> $nullableNumbers
+ * @param list<string|null> $nullableStrings
+ * @param iterable<object, string> $objectKeyedStrings
+ */
+function terminal_adapter_results(
+    array $numbers,
+    array $strings,
+    array $nullableNumbers,
+    array $nullableStrings,
+    iterable $objectKeyedStrings,
+): void {
+    $format = adapterMap(format_number(...));
+    $positiveOrNull = adapterThen(static fn(int $value): bool => $value > 0);
+    $positive = adapterFilter(static fn(int $value): bool => $value > 0);
+    $parsed = adapterFilterMap(static fn(string $value): ?int => $value === '' ? null : strlen($value));
+    assertType('Nagare\\Adapter\\Definition<int, string>', $format);
+    assertType('Nagare\\Adapter\\Definition<int, int|null>', $positiveOrNull);
+    assertType('Nagare\\Adapter\\Definition<int, int>', $positive);
+    assertType('Nagare\\Adapter\\Definition<string, int<1, max>>', $parsed);
+
+    $formattedValues = $format |> values()->apply();
+    $positiveOrNullValues = $positiveOrNull |> values()->apply();
+    $positiveValues = $positive |> values()->apply();
+    $presentValues = adapterSome() |> values()->apply();
+    $parsedValues = $parsed |> values()->apply();
+    assertType('list<string>', $numbers |> $formattedValues);
+    assertType('list<int|null>', $numbers |> $positiveOrNullValues);
+    assertType('list<int>', $numbers |> $positiveValues);
+    assertType('list<string>', $nullableStrings |> $presentValues);
+    assertType('list<int<1, max>>', $strings |> $parsedValues);
+
+    $fixedDefault = adapterDefaults('missing');
+    $factoryDefault = adapterDefaultsOr(created_text(...));
+    $fixedDefaultValues = $fixedDefault |> values()->apply();
+    $factoryDefaultValues = $factoryDefault |> values()->apply();
+    assertType("list<'missing'|int>", $nullableNumbers |> $fixedDefaultValues);
+    assertType('list<string>', $nullableStrings |> $fixedDefaultValues);
+    assertType('list<int|string>', $nullableNumbers |> $factoryDefaultValues);
+    assertType('list<string>', $nullableStrings |> $factoryDefaultValues);
+
+    $normalizedLength = adapterMap(nullable_length(...)) |> adapterSome() |> adapterMap(format_number(...));
+    $defaultedLength = adapterMap(nullable_length(...)) |> adapterDefaults(0);
+    $factoryDefaultedLength = adapterMap(nullable_length(...)) |> adapterDefaultsOr(static fn(): int => 0);
+    assertType('Nagare\\Adapter\\Definition<string, string>', $normalizedLength);
+    assertType('Nagare\\Adapter\\Definition<string, int>', $defaultedLength);
+    assertType('Nagare\\Adapter\\Definition<string, int>', $factoryDefaultedLength);
+
+    $allFactories = adapterMap(format_number(...))
+        |> adapterFilter(static fn(string $value): bool => $value !== '')
+        |> adapterThen(static fn(string $value): bool => $value !== '0')
+        |> adapterDefaults('missing')
+        |> adapterFilterMap(nullable_length(...))
+        |> adapterSome()
+        |> adapterDefaultsOr(static fn(): int => 0);
+    assertType('Nagare\\Adapter\\Definition<int, int>', $allFactories);
+
+    $formattedFirst = $format |> first()->apply();
+    $formattedMinimum = $format |> min()->apply();
+    $formattedUnique = $format |> unique()->apply();
+    $formattedEntries = $format |> entries()->apply();
+    $formattedAssociation = $format |> associate()->apply();
+    $formattedPivot = $format |> pivot(first: first(), values: values(), minimum: min())->apply();
+    assertType('string|null', $numbers |> $formattedFirst);
+    assertType('string|null', $numbers |> $formattedMinimum);
+    assertType('list<string>', $numbers |> $formattedUnique);
+    assertType('list<array{int<0, max>, string}>', $numbers |> $formattedEntries);
+    assertType('array<int<0, max>, string>', $numbers |> $formattedAssociation);
+    assertType('array{first: string|null, values: list<string>, minimum: string|null}', $numbers |> $formattedPivot);
+
+    $opaqueTerminal = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
+    $thirdPartyTerminal = new StringLengthAdapter() |> $opaqueTerminal->apply();
+    assertType('Nagare\\Terminal<object, string, string>', $thirdPartyTerminal);
+    assertType('string', $objectKeyedStrings |> $thirdPartyTerminal);
 }
 
 /**

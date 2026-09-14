@@ -42,7 +42,7 @@ final class TerminalApplyReturnTypeExtension implements DynamicMethodReturnTypeE
     ): ?Type {
         $terminal = $scope->getType($methodCall->var);
         $closure = $this->typeStringResolver->resolve(
-            'Closure<TSource, TTransformed of TValue>(\\Nagare\\Transform<TSource, TTransformed&TValue>): \\Nagare\\Terminal<TKey, TSource, TResult>',
+            'Closure<TSource, TAdapted of TValue>(\\Nagare\\TerminalAdapter<TSource, TAdapted&TValue>): \\Nagare\\Terminal<TKey, TSource, TResult>',
             new NameScope(null, [], templateTypeMap: new TemplateTypeMap([
                 'TKey' => TerminalInputType::resolve($terminal, 'TKey'),
                 'TValue' => TerminalInputType::resolve($terminal, 'TValue'),
@@ -55,21 +55,21 @@ final class TerminalApplyReturnTypeExtension implements DynamicMethodReturnTypeE
         if (!$closure instanceof ClosureType || !$input instanceof TemplateType) {
             return null;
         }
-        $transformed = $closure->getTemplateTypeMap()->getType('TTransformed');
-        if ($transformed === null) {
+        $adapted = $closure->getTemplateTypeMap()->getType('TAdapted');
+        if ($adapted === null) {
             return null;
         }
 
         return TypeTraverser::map($closure, static function (Type $type, callable $traverse) use (
             $input,
-            $transformed,
+            $adapted,
         ): Type {
             if (
                 $type instanceof TemplateType
                 && $type->getName() === 'TInputValue'
                 && $type->getScope()->equals($input->getScope())
             ) {
-                return $transformed;
+                return $adapted;
             }
 
             return $traverse($type);

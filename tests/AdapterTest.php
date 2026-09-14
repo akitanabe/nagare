@@ -23,20 +23,13 @@ final class AdapterTest extends TestCase
 {
     public function testEveryFactoryReturnsTheSameReusableDefinitionType(): void
     {
-        $definitions = [
-            map(static fn(int $value): int => $value + 1),
-            then(static fn(int $value): bool => $value > 0),
-            defaults(0),
-            defaultsOr(static fn(): int => 0),
-            filter(static fn(int $value): bool => $value > 0),
-            some(),
-            filterMap(static fn(int $value): ?int => $value > 0 ? $value : null),
-        ];
-
-        foreach ($definitions as $definition) {
-            self::assertInstanceOf(Definition::class, $definition);
-            self::assertSame([], ($definition |> values()->apply())([]));
-        }
+        self::assertEmptyResult(map(static fn(int $value): int => $value + 1));
+        self::assertEmptyResult(then(static fn(int $value): bool => $value > 0));
+        self::assertEmptyResult(defaults(0));
+        self::assertEmptyResult(defaultsOr(static fn(): int => 0));
+        self::assertEmptyResult(filter(static fn(int $value): bool => $value > 0));
+        self::assertEmptyResult(some());
+        self::assertEmptyResult(filterMap(static fn(int $value): ?int => $value > 0 ? $value : null));
     }
 
     public function testMappingAdaptersComposeLeftToRightWithoutRunningCallbacksUntilInputArrives(): void
@@ -208,5 +201,16 @@ final class AdapterTest extends TestCase
                 'null-key' => 'null',
             ]),
         );
+    }
+
+    /**
+     * @template TInput
+     * @template TOutput
+     * @param Definition<TInput, TOutput> $definition
+     */
+    private static function assertEmptyResult(Definition $definition): void
+    {
+        self::assertInstanceOf(Definition::class, $definition);
+        self::assertSame([], ($definition |> values()->apply())([]));
     }
 }

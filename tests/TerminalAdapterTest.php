@@ -22,29 +22,27 @@ final class TerminalAdapterTest extends TestCase
         $log = new AdapterLog();
         $adapter = new StringLengthAdapter();
         $terminal = $adapter
-            |> Terminal::factory( // @phpstan-ignore argument.type, argument.templateType (This test exercises the runtime TerminalAdapter connector before its input/output extension is generalized.)
-                static fn(): TerminalExecution => new class($log) implements TerminalExecution {
-                    /** @param AdapterLog $log */
-                    public function __construct(
-                        private AdapterLog $log,
-                    ) {}
+            |> Terminal::factory(static fn(): TerminalExecution => new class($log) implements TerminalExecution {
+                /** @param AdapterLog $log */
+                public function __construct(
+                    private AdapterLog $log,
+                ) {}
 
-                    public function accept(mixed $value, mixed $key): void
-                    {
-                        $this->log->seen[] = [$key, $value];
-                    }
+                public function accept(mixed $value, mixed $key): void
+                {
+                    $this->log->seen[] = [$key, $value];
+                }
 
-                    public function isComplete(): bool
-                    {
-                        return false;
-                    }
+                public function isComplete(): bool
+                {
+                    return false;
+                }
 
-                    public function finish(): mixed
-                    {
-                        return 'finished';
-                    }
-                },
-            )->apply();
+                public function finish(): mixed
+                {
+                    return 'finished';
+                }
+            })->apply();
 
         self::assertSame('finished', $terminal(['first' => 'one', 'second' => 'four']));
         self::assertSame([['first', 3], ['second', 4]], $log->seen);
@@ -55,30 +53,28 @@ final class TerminalAdapterTest extends TestCase
         $created = 0;
         $adapter = new StringLengthAdapter();
         $terminal = $adapter
-            |> Terminal::factory( // @phpstan-ignore argument.type, argument.templateType (This test exercises the runtime TerminalAdapter connector before its input/output extension is generalized.)
-                static function () use (&$created): TerminalExecution {
-                    $created++;
+            |> Terminal::factory(static function () use (&$created): TerminalExecution {
+                $created++;
 
-                    return new class implements TerminalExecution {
-                        private int $accepted = 0;
+                return new class implements TerminalExecution {
+                    private int $accepted = 0;
 
-                        public function accept(mixed $value, mixed $key): void
-                        {
-                            $this->accepted++;
-                        }
+                    public function accept(mixed $value, mixed $key): void
+                    {
+                        $this->accepted++;
+                    }
 
-                        public function isComplete(): bool
-                        {
-                            return false;
-                        }
+                    public function isComplete(): bool
+                    {
+                        return false;
+                    }
 
-                        public function finish(): mixed
-                        {
-                            return $this->accepted;
-                        }
-                    };
-                },
-            )->apply();
+                    public function finish(): mixed
+                    {
+                        return $this->accepted;
+                    }
+                };
+            })->apply();
 
         self::assertSame(1, $terminal(['first' => 'one']));
         self::assertSame(2, $terminal(['first' => 'one', 'second' => 'two']));
@@ -88,8 +84,7 @@ final class TerminalAdapterTest extends TestCase
     public function testStatefulAdapterCreatesFreshWrapperForEachInvocation(): void
     {
         $adapter = new StatefulAdapter();
-        // @phpstan-ignore argument.type, argument.templateType (The runtime contract intentionally exercises TerminalAdapter before IU-3 generalizes TerminalApplyReturnTypeExtension.)
-        $terminal = $adapter |> /* @phpstan-ignore argument.templateType (The current extension models only Transform until IU-3 generalizes TerminalAdapter inference.) */ values()->apply();
+        $terminal = $adapter |> values()->apply();
 
         self::assertSame([[1, 'first'], [2, 'second']], $terminal(['first', 'second']));
         self::assertSame([[1, 'third']], $terminal(['third']));
@@ -102,30 +97,29 @@ final class TerminalAdapterTest extends TestCase
         $result = new \stdClass();
         $log = new AdapterLog();
         $terminal = new StringLengthAdapter()
-            |> Terminal::factory( // @phpstan-ignore argument.type, argument.templateType (This test exercises the runtime TerminalAdapter connector before its input/output extension is generalized.)
-                static fn(): TerminalExecution => new class($log, $result) implements TerminalExecution {
-                    /** @param AdapterLog $log */
-                    public function __construct(
-                        private AdapterLog $log,
-                        private \stdClass $result,
-                    ) {}
+            |> Terminal::factory(static fn(): TerminalExecution => new class($log, $result) implements
+                TerminalExecution {
+                /** @param AdapterLog $log */
+                public function __construct(
+                    private AdapterLog $log,
+                    private \stdClass $result,
+                ) {}
 
-                    public function accept(mixed $value, mixed $key): void
-                    {
-                        $this->log->seen[] = [$key, $value];
-                    }
+                public function accept(mixed $value, mixed $key): void
+                {
+                    $this->log->seen[] = [$key, $value];
+                }
 
-                    public function isComplete(): bool
-                    {
-                        return false;
-                    }
+                public function isComplete(): bool
+                {
+                    return false;
+                }
 
-                    public function finish(): mixed
-                    {
-                        return $this->result;
-                    }
-                },
-            )->apply();
+                public function finish(): mixed
+                {
+                    return $this->result;
+                }
+            })->apply();
 
         $actual = $terminal(
             (static function () use ($key): iterable {
@@ -148,25 +142,23 @@ final class TerminalAdapterTest extends TestCase
         });
         $complete = new \stdClass();
         $terminal = $adapter
-            |> Terminal::factory( // @phpstan-ignore argument.type, argument.templateType (This test exercises the runtime TerminalAdapter connector before its input/output extension is generalized.)
-                static fn(): TerminalExecution => new class($complete) implements TerminalExecution {
-                    public function __construct(
-                        private \stdClass $result,
-                    ) {}
+            |> Terminal::factory(static fn(): TerminalExecution => new class($complete) implements TerminalExecution {
+                public function __construct(
+                    private \stdClass $result,
+                ) {}
 
-                    public function accept(mixed $value, mixed $key): void {}
+                public function accept(mixed $value, mixed $key): void {}
 
-                    public function isComplete(): bool
-                    {
-                        return true;
-                    }
+                public function isComplete(): bool
+                {
+                    return true;
+                }
 
-                    public function finish(): mixed
-                    {
-                        return $this->result;
-                    }
-                },
-            )->apply();
+                public function finish(): mixed
+                {
+                    return $this->result;
+                }
+            })->apply();
 
         self::assertSame(
             $complete,
@@ -185,9 +177,7 @@ final class TerminalAdapterTest extends TestCase
         $shortCircuit = new CallbackAdapter(static function () use (&$callbackCalls): void {
             $callbackCalls++;
         })
-            |> Terminal::factory( // @phpstan-ignore argument.type, argument.templateType (This test exercises the runtime TerminalAdapter connector before its input/output extension is generalized.)
-                static fn(): TerminalExecution => new CompleteAfterFirstExecution(),
-            )->apply();
+            |> Terminal::factory(static fn(): TerminalExecution => new CompleteAfterFirstExecution())->apply();
 
         self::assertSame(
             1,
@@ -210,8 +200,7 @@ final class TerminalAdapterTest extends TestCase
         $callbackAdapter = new CallbackAdapter(static function () use ($callbackFailure): void {
             throw $callbackFailure;
         });
-        // @phpstan-ignore argument.type, argument.templateType (The runtime contract intentionally exercises TerminalAdapter before IU-3 generalizes TerminalApplyReturnTypeExtension.)
-        $cb = $callbackAdapter |> /* @phpstan-ignore argument.templateType (The current extension models only Transform until IU-3 generalizes TerminalAdapter inference.) */ values()->apply();
+        $cb = $callbackAdapter |> values()->apply();
 
         try {
             $cb(['value']);
@@ -222,28 +211,27 @@ final class TerminalAdapterTest extends TestCase
 
         $downstreamFailure = new RuntimeException('downstream accept');
         $downstreamTerminal = new CallbackAdapter(static function (): void {})
-            |> Terminal::factory( // @phpstan-ignore argument.type, argument.templateType (This test exercises the runtime TerminalAdapter connector before its input/output extension is generalized.)
-                static fn(): TerminalExecution => new class($downstreamFailure) implements TerminalExecution {
-                    public function __construct(
-                        private RuntimeException $failure,
-                    ) {}
+            |> Terminal::factory(static fn(): TerminalExecution => new class($downstreamFailure) implements
+                TerminalExecution {
+                public function __construct(
+                    private RuntimeException $failure,
+                ) {}
 
-                    public function accept(mixed $value, mixed $key): void
-                    {
-                        throw $this->failure;
-                    }
+                public function accept(mixed $value, mixed $key): void
+                {
+                    throw $this->failure;
+                }
 
-                    public function isComplete(): bool
-                    {
-                        return false;
-                    }
+                public function isComplete(): bool
+                {
+                    return false;
+                }
 
-                    public function finish(): mixed
-                    {
-                        return null;
-                    }
-                },
-            )->apply();
+                public function finish(): mixed
+                {
+                    return null;
+                }
+            })->apply();
 
         try {
             $downstreamTerminal(['value']);
@@ -254,8 +242,7 @@ final class TerminalAdapterTest extends TestCase
 
         $sourceFailure = new RuntimeException('source');
         $sourceAdapter = new CallbackAdapter(static function (): void {});
-        // @phpstan-ignore argument.type, argument.templateType (The runtime contract intentionally exercises TerminalAdapter before IU-3 generalizes TerminalApplyReturnTypeExtension.)
-        $src = $sourceAdapter |> /* @phpstan-ignore argument.templateType (The current extension models only Transform until IU-3 generalizes TerminalAdapter inference.) */ values()->apply();
+        $src = $sourceAdapter |> values()->apply();
 
         try {
             $src(
@@ -271,25 +258,24 @@ final class TerminalAdapterTest extends TestCase
 
         $finishFailure = new RuntimeException('finish');
         $finishTerminal = new CallbackAdapter(static function (): void {})
-            |> Terminal::factory( // @phpstan-ignore argument.type, argument.templateType (This test exercises the runtime TerminalAdapter connector before its input/output extension is generalized.)
-                static fn(): TerminalExecution => new class($finishFailure) implements TerminalExecution {
-                    public function __construct(
-                        private RuntimeException $failure,
-                    ) {}
+            |> Terminal::factory(static fn(): TerminalExecution => new class($finishFailure) implements
+                TerminalExecution {
+                public function __construct(
+                    private RuntimeException $failure,
+                ) {}
 
-                    public function accept(mixed $value, mixed $key): void {}
+                public function accept(mixed $value, mixed $key): void {}
 
-                    public function isComplete(): bool
-                    {
-                        return false;
-                    }
+                public function isComplete(): bool
+                {
+                    return false;
+                }
 
-                    public function finish(): mixed
-                    {
-                        throw $this->failure;
-                    }
-                },
-            )->apply();
+                public function finish(): mixed
+                {
+                    throw $this->failure;
+                }
+            })->apply();
 
         try {
             $finishTerminal(['value']);

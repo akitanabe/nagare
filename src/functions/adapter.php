@@ -24,7 +24,7 @@ function map(callable $mapper): Definition
  * @template TValue
  * @param callable(TValue): mixed $predicate
  * @param-later-invoked-callable $predicate
- * @return Definition<TValue, TValue|null>
+ * @return Definition<mixed, mixed>
  */
 function then(callable $predicate): Definition
 {
@@ -34,10 +34,9 @@ function then(callable $predicate): Definition
 /**
  * Replace each null terminal input with a fixed fallback.
  *
- * @template TValue
  * @template TFallback
  * @param TFallback $fallback
- * @return Definition<TValue|null, TValue|TFallback>
+ * @return Definition<mixed, mixed>
  */
 function defaults(mixed $fallback): Definition
 {
@@ -47,11 +46,10 @@ function defaults(mixed $fallback): Definition
 /**
  * Create a fallback for each null terminal input while leaving present values unchanged.
  *
- * @template TValue
  * @template TFallback
  * @param callable(): TFallback $factory
  * @param-later-invoked-callable $factory
- * @return Definition<TValue|null, TValue|TFallback>
+ * @return Definition<mixed, mixed>
  */
 function defaultsOr(callable $factory): Definition
 {
@@ -74,8 +72,7 @@ function filter(callable $predicate): Definition
 /**
  * Forward every non-null value, including other PHP-falsy values.
  *
- * @template TValue
- * @return Definition<TValue|null, TValue>
+ * @return Definition<mixed, mixed>
  */
 function some(): Definition
 {

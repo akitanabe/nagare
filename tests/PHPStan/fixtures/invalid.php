@@ -6,7 +6,11 @@ namespace Nagare\Tests\PHPStan\Fixtures;
 
 use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
+use Nagare\Tests\TerminalAdapter\StringLengthAdapter;
 
+use function Nagare\Adapter\filter as adapterFilter;
+use function Nagare\Adapter\filterMap as adapterFilterMap;
+use function Nagare\Adapter\map as adapterMap;
 use function Nagare\Aggregation\average;
 use function Nagare\Aggregation\fold;
 use function Nagare\Aggregation\join;
@@ -127,6 +131,32 @@ function incompatible_inputs(array $numbers, array $strings, iterable $objectKey
 
     // @phpstan-ignore argument.unresolvableType, callable.unresolvableReturnType (Preserving chunk keys requires PHP array-compatible input keys.)
     $objectKeys |> chunking(2, preserveKeys: true);
+}
+
+/**
+ * @param list<string> $strings
+ * @param iterable<object, int> $objectKeys
+ */
+function incompatible_terminal_adapters(array $strings, iterable $objectKeys): void
+{
+    $custom = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
+    $thirdParty = new StringLengthAdapter() |> $custom->apply();
+    // @phpstan-ignore argument.type (The third-party adapter accepts strings, not this integer-valued source.)
+    $objectKeys |> $thirdParty;
+
+    // @phpstan-ignore argument.type (The adapter's integer output cannot satisfy a string terminal input.)
+    new StringLengthAdapter() |> join(',')->apply();
+
+    // @phpstan-ignore argument.type (Adapter filter predicates have a strict boolean contract.)
+    adapterFilter(static fn(int $value): string => (string) $value);
+
+    $integerFilterMap = adapterFilterMap(static fn(int $value): ?string => $value > 0 ? (string) $value : null);
+    $integerFilterMapValues = $integerFilterMap |> values()->apply();
+    // @phpstan-ignore argument.type (The filterMap callback accepts integers, not this string-valued source.)
+    $strings |> $integerFilterMapValues;
+
+    // @phpstan-ignore argument.type (The next definition cannot accept the preceding definition's string output.)
+    adapterMap(format_number(...)) |> adapterMap(static fn(float $value): bool => $value > 0);
 }
 
 function incompatible_hook_callback_types(): void
