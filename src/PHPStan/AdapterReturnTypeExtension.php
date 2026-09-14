@@ -27,8 +27,8 @@ final class AdapterReturnTypeExtension implements DynamicFunctionReturnTypeExten
             $functionReflection->getName(),
             [
                 'Nagare\\Adapter\\then',
-                'Nagare\\Adapter\\defaults',
-                'Nagare\\Adapter\\defaultsOr',
+                'Nagare\\Adapter\\fallback',
+                'Nagare\\Adapter\\fallbackWith',
                 'Nagare\\Adapter\\some',
             ],
             strict: true,
@@ -74,12 +74,12 @@ final class AdapterReturnTypeExtension implements DynamicFunctionReturnTypeExten
         }
 
         $argumentType = $scope->getType($argument->value);
-        if ($name === 'Nagare\\Adapter\\defaultsOr') {
+        if ($name === 'Nagare\\Adapter\\fallbackWith') {
             $acceptor = $argumentType->getCallableParametersAcceptors($scope)[0] ?? null;
             $argumentType = $acceptor === null ? new MixedType() : $acceptor->getReturnType();
         }
 
-        $input = $name === 'Nagare\\Adapter\\defaults'
+        $input = $name === 'Nagare\\Adapter\\fallback'
             ? $this->defaultType->fixedInput()
             : $this->defaultType->factoryInput();
         if ($input === null) {

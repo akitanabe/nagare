@@ -16,8 +16,8 @@ the pipe operator and run only after the resulting terminal receives input.
 | --- | --- |
 | `map(callable(TInput): TOutput)` | Map and forward every input. |
 | `then(callable(TValue): mixed)` | Forward the original value when the result is PHP-truthy; otherwise forward `null`. It never rejects an input. |
-| `defaults(TFallback)` | Replace only `null` with the fixed fallback. |
-| `defaultsOr(callable(): TFallback)` | Call the factory once for each `null`; do not call it for present values. |
+| `fallback(TFallback)` | Replace only `null` with the fixed fallback. |
+| `fallbackWith(callable(): TFallback)` | Call the factory once for each `null`; do not call it for present values. |
 | `filter(callable(TValue): bool)` | Forward the original value only when the predicate is PHP-truthy. Its static predicate contract is `bool`. |
 | `some()` | Reject only `null`; forward `false`, `0`, `0.0`, and `''`. |
 | `filterMap(callable(TInput): TOutput\|null)` | Call the mapper once per input, reject `null`, and forward every non-null output. |

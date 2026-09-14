@@ -8,8 +8,8 @@ use Nagare\Terminal;
 use Nagare\Tests\PHPStan\ObjectKeyExecution;
 use Nagare\Tests\TerminalAdapter\StringLengthAdapter;
 
-use function Nagare\Adapter\defaults as adapterDefaults;
-use function Nagare\Adapter\defaultsOr as adapterDefaultsOr;
+use function Nagare\Adapter\fallback as adapterFallback;
+use function Nagare\Adapter\fallbackWith as adapterFallbackWith;
 use function Nagare\Adapter\filter as adapterFilter;
 use function Nagare\Adapter\filterMap as adapterFilterMap;
 use function Nagare\Adapter\map;
@@ -413,8 +413,8 @@ function terminal_adapter_results(
     assertType('list<string>', $nullableStrings |> $presentValues);
     assertType('list<int<1, max>>', $strings |> $parsedValues);
 
-    $fixedDefault = adapterDefaults('missing');
-    $factoryDefault = adapterDefaultsOr(created_text(...));
+    $fixedDefault = adapterFallback('missing');
+    $factoryDefault = adapterFallbackWith(created_text(...));
     $fixedDefaultValues = $fixedDefault |> values()->apply();
     $factoryDefaultValues = $factoryDefault |> values()->apply();
     assertType("list<'missing'|int>", $nullableNumbers |> $fixedDefaultValues);
@@ -423,8 +423,8 @@ function terminal_adapter_results(
     assertType('list<string>', $nullableStrings |> $factoryDefaultValues);
 
     $normalizedLength = adapterMap(nullable_length(...)) |> adapterSome() |> adapterMap(format_number(...));
-    $defaultedLength = adapterMap(nullable_length(...)) |> adapterDefaults(0);
-    $factoryDefaultedLength = adapterMap(nullable_length(...)) |> adapterDefaultsOr(static fn(): int => 0);
+    $defaultedLength = adapterMap(nullable_length(...)) |> adapterFallback(0);
+    $factoryDefaultedLength = adapterMap(nullable_length(...)) |> adapterFallbackWith(static fn(): int => 0);
     assertType('Nagare\\Adapter\\Definition<string, string>', $normalizedLength);
     assertType('Nagare\\Adapter\\Definition<string, int>', $defaultedLength);
     assertType('Nagare\\Adapter\\Definition<string, int>', $factoryDefaultedLength);
@@ -432,10 +432,10 @@ function terminal_adapter_results(
     $allFactories = adapterMap(format_number(...))
         |> adapterFilter(static fn(string $value): bool => $value !== '')
         |> adapterThen(static fn(string $value): bool => $value !== '0')
-        |> adapterDefaults('missing')
+        |> adapterFallback('missing')
         |> adapterFilterMap(nullable_length(...))
         |> adapterSome()
-        |> adapterDefaultsOr(static fn(): int => 0);
+        |> adapterFallbackWith(static fn(): int => 0);
     assertType('Nagare\\Adapter\\Definition<int, int>', $allFactories);
 
     $formattedFirst = $format |> first()->apply();
