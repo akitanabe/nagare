@@ -22,6 +22,10 @@ services:
         tags:
             - phpstan.broker.dynamicMethodReturnTypeExtension
     -
+        class: Nagare\PHPStan\TerminalHookReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
+    -
         class: Nagare\PHPStan\TransformationReturnTypeExtension
         tags:
             - phpstan.broker.dynamicFunctionReturnTypeExtension

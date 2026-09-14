@@ -148,6 +148,10 @@ function transformation_and_query_results(array $numbers, array $strings, array 
     assertType('string|null', $numbers |> $formattedFound);
     assertType('string|null', $numbers |> $formattedMinimumByLength);
     assertType('string|null', $numbers |> $formattedMaximumByLength);
+
+    $hookedFound = $formattedFound->hook(static function (int $value, mixed $key): void {});
+    assertType('Nagare\\Terminal<mixed, int, string|null>', $hookedFound);
+    assertType('string|null', $numbers |> $hookedFound);
 }
 
 /**
@@ -290,8 +294,10 @@ function terminal_composition_results(array $numbers, array $strings, iterable $
 
     $custom = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
     $incrementedCustom = map(static fn(int $n): int => $n + 1) |> $custom->apply();
+    $hookedCustom = $custom->hook(static function (int $value, object $key): void {});
     assertType('string', $objectKeys |> $custom);
     assertType('string', $objectKeys |> $incrementedCustom);
+    assertType('Nagare\\Terminal<object, int, string>', $hookedCustom);
     assertType('array{first: int|null, custom: string}', $objectKeys |> pivot(first: $first, custom: $custom));
     assertType('string', $custom->execution()->finish());
 }

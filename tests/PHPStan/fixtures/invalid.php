@@ -129,6 +129,17 @@ function incompatible_inputs(array $numbers, array $strings, iterable $objectKey
     $objectKeys |> chunking(2, preserveKeys: true);
 }
 
+function incompatible_hook_callback_types(): void
+{
+    $sum = fold(0, static fn(int $state, int $value): int => $state + $value);
+    // @phpstan-ignore argument.type (A hook callback must accept the terminal's integer values.)
+    $sum->hook(static function (string $value, mixed $key): void {});
+
+    $custom = Terminal::factory(static fn(): ObjectKeyExecution => new ObjectKeyExecution());
+    // @phpstan-ignore argument.type (A hook callback must accept the terminal's object keys.)
+    $custom->hook(static function (int $value, string $key): void {});
+}
+
 /** @param iterable<object, int> $objectKeys */
 function incompatible_dynamic_chunking_input(iterable $objectKeys, bool $preserveKeys): void
 {
