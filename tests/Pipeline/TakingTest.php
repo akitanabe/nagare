@@ -7,9 +7,9 @@ namespace Nagare\Tests\Pipeline;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Materialization\values;
 use function Nagare\Pipeline\taking;
-use function Nagare\Query\first;
+use function Nagare\Terminal\Materialization\values;
+use function Nagare\Terminal\Query\first;
 
 final class TakingTest extends TestCase
 {

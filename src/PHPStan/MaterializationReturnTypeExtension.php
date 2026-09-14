@@ -36,9 +36,9 @@ final class MaterializationReturnTypeExtension implements DynamicFunctionReturnT
         return in_array(
             $functionReflection->getName(),
             [
-                'Nagare\\Materialization\\keys',
-                'Nagare\\Materialization\\associate',
-                'Nagare\\Materialization\\entries',
+                'Nagare\\Terminal\\Materialization\\keys',
+                'Nagare\\Terminal\\Materialization\\associate',
+                'Nagare\\Terminal\\Materialization\\entries',
             ],
             strict: true,
         );
@@ -50,7 +50,7 @@ final class MaterializationReturnTypeExtension implements DynamicFunctionReturnT
         Scope $scope,
     ): ?Type {
         $name = $functionReflection->getName();
-        if ($name === 'Nagare\\Materialization\\keys') {
+        if ($name === 'Nagare\\Terminal\\Materialization\\keys') {
             $key = $this->materializationKey($name);
 
             return $this->inputDependentTerminal(
@@ -63,7 +63,7 @@ final class MaterializationReturnTypeExtension implements DynamicFunctionReturnT
             );
         }
 
-        if ($name === 'Nagare\\Materialization\\entries') {
+        if ($name === 'Nagare\\Terminal\\Materialization\\entries') {
             $key = $this->materializationKey($name);
 
             return $this->inputDependentTerminal(

@@ -11,7 +11,7 @@ use RuntimeException;
 use TypeError;
 
 use function Nagare\Adapter\map;
-use function Nagare\Materialization\values;
+use function Nagare\Terminal\Materialization\values;
 
 final class TerminalTest extends TestCase
 {

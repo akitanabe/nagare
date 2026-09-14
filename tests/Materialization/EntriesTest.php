@@ -6,7 +6,7 @@ namespace Nagare\Tests\Materialization;
 
 use PHPUnit\Framework\TestCase;
 
-use function Nagare\Materialization\entries;
+use function Nagare\Terminal\Materialization\entries;
 
 final class EntriesTest extends TestCase
 {

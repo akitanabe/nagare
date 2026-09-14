@@ -10,11 +10,11 @@ use RuntimeException;
 use stdClass;
 use TypeError;
 
-use function Nagare\Aggregation\countBy;
-use function Nagare\Aggregation\groupBy;
-use function Nagare\Aggregation\pivot;
-use function Nagare\Aggregation\unique;
-use function Nagare\Aggregation\uniqueBy;
+use function Nagare\Terminal\Aggregation\countBy;
+use function Nagare\Terminal\Aggregation\groupBy;
+use function Nagare\Terminal\Aggregation\pivot;
+use function Nagare\Terminal\Aggregation\unique;
+use function Nagare\Terminal\Aggregation\uniqueBy;
 
 final class CollectionAggregationTest extends TestCase
 {

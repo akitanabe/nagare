@@ -8,9 +8,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Query\find;
-use function Nagare\Query\first;
-use function Nagare\Query\last;
+use function Nagare\Terminal\Query\find;
+use function Nagare\Terminal\Query\first;
+use function Nagare\Terminal\Query\last;
 
 final class QueryTest extends TestCase
 {

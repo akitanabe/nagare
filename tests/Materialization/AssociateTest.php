@@ -7,7 +7,7 @@ namespace Nagare\Tests\Materialization;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Materialization\associate;
+use function Nagare\Terminal\Materialization\associate;
 
 final class AssociateTest extends TestCase
 {

@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 use function Nagare\Pipeline\takingWhile;
-use function Nagare\Query\first;
+use function Nagare\Terminal\Query\first;
 
 final class TakingWhileTest extends TestCase
 {

@@ -10,10 +10,10 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 use function Nagare\Adapter\map;
-use function Nagare\Aggregation\fold;
-use function Nagare\Aggregation\pivot;
-use function Nagare\Materialization\values;
-use function Nagare\Query\first;
+use function Nagare\Terminal\Aggregation\fold;
+use function Nagare\Terminal\Aggregation\pivot;
+use function Nagare\Terminal\Materialization\values;
+use function Nagare\Terminal\Query\first;
 
 final class PivotTest extends TestCase
 {

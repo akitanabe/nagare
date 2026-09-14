@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use stdClass;
 
-use function Nagare\Aggregation\pivot;
-use function Nagare\Query\contains;
-use function Nagare\Query\isEmpty;
+use function Nagare\Terminal\Aggregation\pivot;
+use function Nagare\Terminal\Query\contains;
+use function Nagare\Terminal\Query\isEmpty;
 
 final class ContainsQueryTest extends TestCase
 {

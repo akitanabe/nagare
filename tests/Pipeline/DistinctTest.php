@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 use function Nagare\Pipeline\distinct;
-use function Nagare\Query\first;
+use function Nagare\Terminal\Query\first;
 
 final class DistinctTest extends TestCase
 {

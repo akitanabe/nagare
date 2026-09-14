@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-use function Nagare\Query\isEmpty;
+use function Nagare\Terminal\Query\isEmpty;
 
 final class IsEmptyQueryTest extends TestCase
 {

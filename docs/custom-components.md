@@ -39,7 +39,7 @@ namespace App\Pricing;
 
 use function Nagare\Adapter\filter;
 use function Nagare\Adapter\map;
-use function Nagare\Materialization\values;
+use function Nagare\Terminal\Materialization\values;
 
 $discountedPrices = filter(static fn(int $cents): bool => $cents >= 100)
     |> map(static fn(int $cents): string => sprintf('$%.2f', $cents / 100))
@@ -197,7 +197,7 @@ declare(strict_types=1);
 
 namespace App\Pricing;
 
-use function Nagare\Materialization\values;
+use function Nagare\Terminal\Materialization\values;
 
 $parsedPrices = new ParseCentsAdapter() |> values()->apply();
 
@@ -223,7 +223,7 @@ namespace App\Pricing\Tests;
 use PHPUnit\Framework\TestCase;
 
 use function App\Pricing\totalCents;
-use function Nagare\Materialization\values;
+use function Nagare\Terminal\Materialization\values;
 
 require_once __DIR__ . '/../src/PricingComponents.php';
 
