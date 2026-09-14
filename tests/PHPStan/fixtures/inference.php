@@ -30,6 +30,7 @@ use function Nagare\Pipeline\chunking;
 use function Nagare\Pipeline\distinct;
 use function Nagare\Pipeline\dropping;
 use function Nagare\Pipeline\droppingWhile;
+use function Nagare\Pipeline\each;
 use function Nagare\Pipeline\filtering;
 use function Nagare\Pipeline\flatMapping;
 use function Nagare\Pipeline\mapping;
@@ -361,6 +362,16 @@ function pipeline_results(array $numbers, iterable $objectKeys, array $stringKey
     assertType('iterable<int<0, max>, int>', $numbers |> $distinct);
 
     assertType('iterable<string, string>', $stringKeys |> mapping($format->transform(...)));
+
+    $observed = each(static function (int $value, string $key): void {});
+    assertType('iterable<string, int>', $stringKeys |> $observed);
+
+    $observedObjectKeys = each(static function (int $value, object $key): void {});
+    assertType('iterable<object, int>', $objectKeys |> $observedObjectKeys);
+
+    $observesAnyInput = each(static function (mixed $value, mixed $key): void {});
+    assertType('iterable<string, int>', $stringKeys |> $observesAnyInput);
+    assertType('iterable<int<0, max>, int>', $numbers |> $observesAnyInput);
 }
 
 function transformation_defaults(int $integerFallback, string $textFallback, ?int $nullableInteger): void

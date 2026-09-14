@@ -17,6 +17,7 @@ use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\associate;
 use function Nagare\Materialization\values;
 use function Nagare\Pipeline\chunking;
+use function Nagare\Pipeline\each;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Query\all;
 use function Nagare\Query\any;
@@ -133,6 +134,22 @@ function incompatible_dynamic_chunking_input(iterable $objectKeys, bool $preserv
 {
     // @phpstan-ignore argument.unresolvableType (A dynamic flag may preserve keys, so object keys cannot safely be accepted.)
     $objectKeys |> chunking(2, preserveKeys: $preserveKeys);
+}
+
+/** @param iterable<object, int> $objectKeys */
+function incompatible_each_input(iterable $objectKeys): void
+{
+    $observed = each(static function (int $value, string $key): void {});
+    // @phpstan-ignore argument.type, argument.templateType (Each callback key type does not accept object keys.)
+    $objectKeys |> $observed;
+}
+
+/** @param iterable<string, string> $stringValues */
+function incompatible_each_value(iterable $stringValues): void
+{
+    $observed = each(static function (int $value, string $key): void {});
+    // @phpstan-ignore argument.type, argument.templateType (Each callback value type does not accept strings.)
+    $stringValues |> $observed;
 }
 
 /** @mago-expect lint:no-boolean-flag-parameter Boolean branches intentionally exercise incompatible union alternatives. */
