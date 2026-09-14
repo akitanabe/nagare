@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nagare\Pipeline;
 
 use Closure;
+use InvalidArgumentException;
 
 /**
  * Lazily transform each value in an iterable while preserving its keys.
@@ -160,6 +161,77 @@ function dropping(int $count): Closure
                 continue;
             }
 
+            yield $key => $value;
+        }
+    };
+}
+
+/**
+ * Lazily collect input values into chunks while preserving their keys and order.
+ * The chunks themselves are yielded with zero-based sequential keys.
+ * Input keys must be integers or strings because each chunk is a PHP array.
+ *
+ * @param int $size
+ * @return Closure<TKey, TValue>(iterable<TKey&array-key, TValue>): iterable<int, array<TKey&array-key, TValue>>
+ * @throws InvalidArgumentException If the chunk size is not positive.
+ */
+function chunking(int $size): Closure
+{
+    if ($size <= 0) {
+        throw new InvalidArgumentException('Chunk size must be greater than zero.');
+    }
+
+    /**
+     * @template TInputKey of array-key
+     * @template TInputValue
+     * @param iterable<TInputKey, TInputValue> $input
+     * @return iterable<int, array<TInputKey, TInputValue>>
+     */
+    return static function (iterable $input) use ($size): iterable {
+        $chunk = [];
+        $chunkSize = 0;
+        $chunkKey = 0;
+
+        foreach ($input as $key => $value) {
+            if (!is_int($key) && !is_string($key)) {
+                throw new \TypeError('Chunk keys must be integers or strings.');
+            }
+
+            $chunk[$key] = $value;
+            $chunkSize++;
+
+            if ($chunkSize < $size) {
+                continue;
+            }
+
+            yield $chunkKey => $chunk;
+            $chunkKey++;
+            $chunk = [];
+            $chunkSize = 0;
+        }
+
+        if ($chunkSize > 0) {
+            yield $chunkKey => $chunk;
+        }
+    };
+}
+
+/**
+ * Lazily yield the first occurrence of each value using strict comparison while preserving keys and order.
+ *
+ * @return Closure<TKey, TValue>(iterable<TKey, TValue>): iterable<TKey, TValue>
+ */
+function distinct(): Closure
+{
+    return static function (iterable $input): iterable {
+        $seen = [];
+
+        foreach ($input as $key => $value) {
+            if (in_array($value, $seen, strict: true)) {
+                continue;
+            }
+
+            $seen[] = $value;
             yield $key => $value;
         }
     };

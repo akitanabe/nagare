@@ -22,6 +22,8 @@ use function Nagare\Materialization\associate;
 use function Nagare\Materialization\entries;
 use function Nagare\Materialization\keys;
 use function Nagare\Materialization\values;
+use function Nagare\Pipeline\chunking;
+use function Nagare\Pipeline\distinct;
 use function Nagare\Pipeline\dropping;
 use function Nagare\Pipeline\droppingWhile;
 use function Nagare\Pipeline\filtering;
@@ -283,6 +285,15 @@ function pipeline_results(array $numbers, iterable $objectKeys, array $stringKey
     assertType('iterable<object, int>', $objectKeys |> $droppedWhile);
     assertType('iterable<string, int>', $stringKeys |> $droppedWhile);
     assertType('iterable<int<0, max>, int>', $numbers |> $droppedWhile);
+
+    $chunks = chunking(2);
+    assertType('iterable<int, array<string, int>>', $stringKeys |> $chunks);
+    assertType('iterable<int, array<int<0, max>, int>>', $numbers |> $chunks);
+
+    $distinct = distinct();
+    assertType('iterable<object, int>', $objectKeys |> $distinct);
+    assertType('iterable<string, int>', $stringKeys |> $distinct);
+    assertType('iterable<int<0, max>, int>', $numbers |> $distinct);
 
     assertType('iterable<string, string>', $stringKeys |> mapping($format->transform(...)));
 }
