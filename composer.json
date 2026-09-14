@@ -13,6 +13,7 @@
   },
   "autoload": {
     "files": [
+      "src/functions/adapter.php",
       "src/functions/aggregation.php",
       "src/functions/materialization.php",
       "src/functions/pipeline.php",
