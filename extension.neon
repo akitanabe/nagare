@@ -2,6 +2,10 @@ services:
     -
         class: Nagare\PHPStan\TransformationDefaultType
     -
+        class: Nagare\PHPStan\AdapterReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicFunctionReturnTypeExtension
+    -
         class: Nagare\PHPStan\TerminalReturnTypeExtension
         tags:
             - phpstan.broker.dynamicFunctionReturnTypeExtension
