@@ -38,7 +38,7 @@ function then(callable $predicate): Definition
  * @param TFallback $fallback
  * @return Definition<mixed, mixed>
  */
-function defaults(mixed $fallback): Definition
+function fallback(mixed $fallback): Definition
 {
     return map(static fn(mixed $value): mixed => $value ?? $fallback);
 }
@@ -51,7 +51,7 @@ function defaults(mixed $fallback): Definition
  * @param-later-invoked-callable $factory
  * @return Definition<mixed, mixed>
  */
-function defaultsOr(callable $factory): Definition
+function fallbackWith(callable $factory): Definition
 {
     return map(static fn(mixed $value): mixed => $value ?? $factory());
 }

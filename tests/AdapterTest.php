@@ -8,8 +8,8 @@ use Nagare\Adapter\Definition;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Nagare\Adapter\defaults;
-use function Nagare\Adapter\defaultsOr;
+use function Nagare\Adapter\fallback;
+use function Nagare\Adapter\fallbackWith;
 use function Nagare\Adapter\filter;
 use function Nagare\Adapter\filterMap;
 use function Nagare\Adapter\map;
@@ -25,8 +25,8 @@ final class AdapterTest extends TestCase
     {
         self::assertEmptyResult(map(static fn(int $value): int => $value + 1));
         self::assertEmptyResult(then(static fn(int $value): bool => $value > 0));
-        self::assertEmptyResult(defaults(0));
-        self::assertEmptyResult(defaultsOr(static fn(): int => 0));
+        self::assertEmptyResult(fallback(0));
+        self::assertEmptyResult(fallbackWith(static fn(): int => 0));
         self::assertEmptyResult(filter(static fn(int $value): bool => $value > 0));
         self::assertEmptyResult(some());
         self::assertEmptyResult(filterMap(static fn(int $value): ?int => $value > 0 ? $value : null));
@@ -45,7 +45,7 @@ final class AdapterTest extends TestCase
 
                 return ($value % 2) === 0;
             })
-            |> defaultsOr(static function () use (&$log): int {
+            |> fallbackWith(static function () use (&$log): int {
                 $log[] = ['default'];
 
                 return 10;
@@ -77,11 +77,11 @@ final class AdapterTest extends TestCase
     }
 
     #[DataProvider('presentValues')]
-    public function testDefaultsReplaceOnlyNullAndDefaultsOrIsLazy(mixed $present): void
+    public function testFallbackReplacesOnlyNullAndFallbackWithIsLazy(mixed $present): void
     {
         $calls = 0;
-        $fixed = defaults('fallback') |> values()->apply();
-        $factory = defaultsOr(static function () use (&$calls): string {
+        $fixed = fallback('fallback') |> values()->apply();
+        $factory = fallbackWith(static function () use (&$calls): string {
             $calls++;
 
             return 'generated';
@@ -93,10 +93,10 @@ final class AdapterTest extends TestCase
         self::assertSame(1, $calls);
     }
 
-    public function testDefaultsOrCallsItsFactoryOnceForEachNullInOneInvocation(): void
+    public function testFallbackWithCallsItsFactoryOnceForEachNullInOneInvocation(): void
     {
         $calls = 0;
-        $terminal = defaultsOr(static function () use (&$calls): string {
+        $terminal = fallbackWith(static function () use (&$calls): string {
             $calls++;
 
             return "fallback-{$calls}";

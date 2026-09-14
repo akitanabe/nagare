@@ -70,14 +70,14 @@ The seven built-in factories preserve these relationships:
 | --- | --- |
 | `map(callable(TInput): TOutput)` | `Definition<TInput, TOutput>` |
 | `then(callable(TValue): mixed)` | `Definition<TValue, TValue\|null>` |
-| `defaults(TFallback)` | `Definition<TValue\|null, TValue\|TFallback>` at each input connection |
-| `defaultsOr(callable(): TFallback)` | `Definition<TValue\|null, TValue\|TFallback>` at each input connection |
+| `fallback(TFallback)` | `Definition<TValue\|null, TValue\|TFallback>` at each input connection |
+| `fallbackWith(callable(): TFallback)` | `Definition<TValue\|null, TValue\|TFallback>` at each input connection |
 | `filter(callable(TValue): bool)` | `Definition<TValue, TValue>` |
 | `some()` | `Definition<TValue\|null, TValue>` at each input connection |
 | `filterMap(callable(TInput): TOutput\|null)` | `Definition<TInput, TOutput>` with `null` removed from the output |
 
 The input-dependent factories can be saved and reused. For example, one
-`defaults('missing')` definition produces `list<int|string>` from
+`fallback('missing')` definition produces `list<int|string>` from
 `iterable<int|null>` and `list<string>` from `iterable<string|null>`.
 Composition through `Definition::__invoke()` carries each output into the next
 input from left to right. PHPStan rejects an incompatible source, an adapter
