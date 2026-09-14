@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Nagare\Pipeline;
 
 use Closure;
-use InvalidArgumentException;
 
 /**
  * Lazily transform each value in an iterable while preserving its keys.
@@ -167,50 +166,53 @@ function dropping(int $count): Closure
 }
 
 /**
- * Lazily collect input values into chunks while preserving their keys and order.
+ * Lazily collect input values into chunks in their input order.
  * The chunks themselves are yielded with zero-based sequential keys.
- * Input keys must be integers or strings because each chunk is a PHP array.
+ * By default, input keys are preserved. With preserveKeys enabled, integer and string keys are preserved in each
+ * chunk, and non-array-compatible keys cause a TypeError during traversal. With preserveKeys disabled, input keys
+ * are discarded and each chunk is a list. A non-positive size yields an empty iterable without consuming the input.
  *
+ * @mago-expect lint:no-boolean-flag-parameter The public preserveKeys option selects the documented chunk representation.
  * @param int $size
- * @return Closure<TKey, TValue>(iterable<TKey&array-key, TValue>): iterable<int, array<TKey&array-key, TValue>>
- * @throws InvalidArgumentException If the chunk size is not positive.
+ * @param bool $preserveKeys
+ * @return Closure<TKey, TValue>(iterable<TKey, TValue>): iterable<int, array<TKey&array-key, TValue>|list<TValue>>
  */
-function chunking(int $size): Closure
+function chunking(int $size, bool $preserveKeys = true): Closure
 {
-    if ($size <= 0) {
-        throw new InvalidArgumentException('Chunk size must be greater than zero.');
-    }
-
     /**
-     * @template TInputKey of array-key
+     * @template TInputKey
      * @template TInputValue
      * @param iterable<TInputKey, TInputValue> $input
-     * @return iterable<int, array<TInputKey, TInputValue>>
+     * @return iterable<int, array<TInputKey, TInputValue>|list<TInputValue>>
      */
-    return static function (iterable $input) use ($size): iterable {
+    return static function (iterable $input) use ($size, $preserveKeys): iterable {
+        if ($size <= 0) {
+            return;
+        }
+
         $chunk = [];
-        $chunkSize = 0;
         $chunkKey = 0;
 
         foreach ($input as $key => $value) {
-            if (!is_int($key) && !is_string($key)) {
-                throw new \TypeError('Chunk keys must be integers or strings.');
+            if ($preserveKeys) {
+                // @phpstan-ignore offsetAccess.invalidOffset (The public ChunkingReturnTypeExtension restricts preserved input keys, and native assignment rejects unchecked calls.)
+                $chunk[$key] = $value;
             }
 
-            $chunk[$key] = $value;
-            $chunkSize++;
+            if (!$preserveKeys) {
+                $chunk[] = $value;
+            }
 
-            if ($chunkSize < $size) {
+            if (count($chunk) < $size) {
                 continue;
             }
 
             yield $chunkKey => $chunk;
             $chunkKey++;
             $chunk = [];
-            $chunkSize = 0;
         }
 
-        if ($chunkSize > 0) {
+        if (count($chunk) > 0) {
             yield $chunkKey => $chunk;
         }
     };

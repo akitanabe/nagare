@@ -10,6 +10,10 @@ services:
         tags:
             - phpstan.broker.dynamicFunctionReturnTypeExtension
     -
+        class: Nagare\PHPStan\ChunkingReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicFunctionReturnTypeExtension
+    -
         class: Nagare\PHPStan\TerminalApplyReturnTypeExtension
         tags:
             - phpstan.broker.dynamicMethodReturnTypeExtension

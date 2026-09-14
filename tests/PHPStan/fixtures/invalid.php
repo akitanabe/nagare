@@ -16,6 +16,7 @@ use function Nagare\Aggregation\pivot;
 use function Nagare\Aggregation\sum;
 use function Nagare\Materialization\associate;
 use function Nagare\Materialization\values;
+use function Nagare\Pipeline\chunking;
 use function Nagare\Pipeline\mapping;
 use function Nagare\Query\all;
 use function Nagare\Query\any;
@@ -122,6 +123,16 @@ function incompatible_inputs(array $numbers, array $strings, iterable $objectKey
     $integerAssociation = associate(static fn(int $value): int => $value);
     // @phpstan-ignore argument.type, argument.templateType (The key selector accepts integer values only.)
     $strings |> $integerAssociation;
+
+    // @phpstan-ignore argument.unresolvableType, callable.unresolvableReturnType (Preserving chunk keys requires PHP array-compatible input keys.)
+    $objectKeys |> chunking(2, preserveKeys: true);
+}
+
+/** @param iterable<object, int> $objectKeys */
+function incompatible_dynamic_chunking_input(iterable $objectKeys, bool $preserveKeys): void
+{
+    // @phpstan-ignore argument.unresolvableType (A dynamic flag may preserve keys, so object keys cannot safely be accepted.)
+    $objectKeys |> chunking(2, preserveKeys: $preserveKeys);
 }
 
 /** @mago-expect lint:no-boolean-flag-parameter Boolean branches intentionally exercise incompatible union alternatives. */

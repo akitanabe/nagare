@@ -300,7 +300,7 @@ function terminal_composition_results(array $numbers, array $strings, iterable $
  * @param iterable<object, int> $objectKeys
  * @param array<string, int> $stringKeys
  */
-function pipeline_results(array $numbers, iterable $objectKeys, array $stringKeys): void
+function pipeline_results(array $numbers, iterable $objectKeys, array $stringKeys, bool $preserveKeys): void
 {
     $format = map(format_number(...));
     $first = first();
@@ -342,6 +342,18 @@ function pipeline_results(array $numbers, iterable $objectKeys, array $stringKey
     $chunks = chunking(2);
     assertType('iterable<int, array<string, int>>', $stringKeys |> $chunks);
     assertType('iterable<int, array<int<0, max>, int>>', $numbers |> $chunks);
+
+    $preservedChunks = chunking(2, preserveKeys: true);
+    assertType('iterable<int, array<string, int>>', $stringKeys |> $preservedChunks);
+    assertType('iterable<int, array<int<0, max>, int>>', $numbers |> $preservedChunks);
+
+    $valueChunks = chunking(2, preserveKeys: false);
+    assertType('iterable<int, list<int>>', $stringKeys |> $valueChunks);
+    assertType('iterable<int, list<int>>', $objectKeys |> $valueChunks);
+
+    $dynamicChunks = chunking(2, preserveKeys: $preserveKeys);
+    assertType('iterable<int, array<int<0, max>|string, int>>', $stringKeys |> $dynamicChunks);
+    assertType('iterable<int, array<int<0, max>, int>>', $numbers |> $dynamicChunks);
 
     $distinct = distinct();
     assertType('iterable<object, int>', $objectKeys |> $distinct);
