@@ -1,7 +1,14 @@
 {
   "name": "akitanabe/nagare",
   "description": "Declarative iterable processing for PHP using the pipe operator.",
-  "type": "project",
+  "type": "library",
+  "keywords": [
+    "pipe-operator",
+    "iterable",
+    "pipeline",
+    "lazy-evaluation",
+    "phpstan"
+  ],
   "license": "MIT",
   "require": {
     "php": "^8.5"
